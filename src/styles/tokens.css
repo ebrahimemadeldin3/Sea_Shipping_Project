@@ -1,0 +1,251 @@
+/* ============================================================
+   AquaFlow Design System — Tokens
+   A premium maritime logistics platform
+   ============================================================ */
+
+:root {
+  color-scheme: light;
+
+  /* ---- Brand palette (deep navy + royal + ocean) ---- */
+  --navy-950: #060f1d;
+  --navy-900: #0a1930;
+  --navy-800: #0e2345;
+  --navy-700: #12305c;
+  --navy-600: #174079;
+  --navy: #0d2c52;
+
+  --royal: #0a5fd2;
+  --royal-700: #0b52b4;
+  --royal-600: #0a5fd2;
+  --royal-500: #1773e8;
+  --royal-200: #b9d8fa;
+  --royal-100: #e3effc;
+  --royal-50: #f0f6fe;
+
+  --ocean: #00a3bf;
+  --ocean-700: #00859c;
+  --ocean-600: #0094ad;
+  --ocean-500: #0ab3cf;
+  --ocean-300: #6cd7e8;
+  --ocean-200: #a9e8f2;
+  --ocean-100: #d9f5f9;
+
+  --sky: #57c9ff;
+  --sky-300: #8edcff;
+  --sky-200: #c2ecff;
+  --sky-100: #eaf7ff;
+
+  /* ---- Gradients ---- */
+  --grad-brand: linear-gradient(135deg, #0b52b4 0%, #0a5fd2 45%, #00a3bf 100%);
+  --grad-brand-soft: linear-gradient(135deg, #e3effc 0%, #d9f5f9 100%);
+  --grad-mist: linear-gradient(180deg, rgba(10, 25, 48, 0.04) 0%, rgba(10, 25, 48, 0) 100%);
+
+  /* ---- Neutrals ---- */
+  --white: #ffffff;
+  --mist: #f6f8fb;
+  --mist-2: #eef2f7;
+  --surface: #ffffff;
+  --surface-raised: #ffffff;
+  --surface-sunken: #f6f8fb;
+  --ink: #0b1b31;
+  --ink-2: #24374f;
+  --muted: #5c6f85;
+  --muted-2: #8a9cb2;
+  --line: rgba(11, 27, 49, 0.1);
+  --line-strong: rgba(11, 27, 49, 0.16);
+  --line-faint: rgba(11, 27, 49, 0.06);
+
+  /* ---- Semantic ---- */
+  --success: #0b8a5e;
+  --success-600: #0d9d6b;
+  --success-bg: #e4f6ee;
+  --success-fg: #0b6a49;
+  --warning: #b4770f;
+  --warning-600: #c98a1e;
+  --warning-bg: #fff4da;
+  --warning-fg: #8a5a0a;
+  --danger: #d23c34;
+  --danger-600: #e04941;
+  --danger-bg: #fdeceb;
+  --danger-fg: #b02a24;
+  --info: #0a5fd2;
+  --info-bg: #e6effd;
+  --info-fg: #0a4ba3;
+
+  /* ---- Status (charts / accents) ---- */
+  --chart-1: #0a5fd2;
+  --chart-2: #00a3bf;
+  --chart-3: #6c5ce7;
+  --chart-4: #f2994a;
+  --chart-5: #27ae60;
+  --chart-6: #eb5757;
+  --chart-7: #9b51e0;
+  --chart-8: #2d9cdb;
+
+  /* ---- Typography ---- */
+  --font-sans: 'Inter', 'Manrope', -apple-system, 'Segoe UI', system-ui, sans-serif;
+  --font-display: 'Manrope', 'Inter', -apple-system, 'Segoe UI', system-ui, sans-serif;
+  --font-mono: 'SF Mono', 'Cascadia Code', 'JetBrains Mono', Consolas, monospace;
+
+  --text-xs: 0.75rem;      /* 12 */
+  --text-sm: 0.8125rem;    /* 13 */
+  --text-base: 0.9375rem;  /* 15 */
+  --text-md: 1.0625rem;    /* 17 */
+  --text-lg: 1.25rem;      /* 20 */
+  --text-xl: 1.5rem;       /* 24 */
+  --text-2xl: 1.875rem;    /* 30 */
+  --text-3xl: 2.375rem;    /* 38 */
+  --text-4xl: 3rem;        /* 48 */
+
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --fw-bold: 700;
+  --fw-extrabold: 800;
+
+  --tracking-tight: -0.025em;
+  --tracking-snug: -0.015em;
+  --tracking-wide: 0.05em;
+
+  /* ---- Spacing ---- */
+  --space-0: 0;
+  --space-1: 4px;
+  --space-1-5: 6px;
+  --space-2: 8px;
+  --space-2-5: 10px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* ---- Radius ---- */
+  --radius-xs: 6px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-2xl: 28px;
+  --radius-full: 999px;
+
+  /* ---- Elevation ---- */
+  --shadow-xs: 0 1px 2px rgba(10, 25, 48, 0.05);
+  --shadow-sm: 0 1px 2px rgba(10, 25, 48, 0.05), 0 2px 8px rgba(10, 25, 48, 0.06);
+  --shadow-md: 0 4px 12px rgba(10, 25, 48, 0.08), 0 12px 28px rgba(10, 25, 48, 0.06);
+  --shadow-lg: 0 8px 24px rgba(10, 25, 48, 0.1), 0 24px 48px rgba(10, 25, 48, 0.08);
+  --shadow-xl: 0 16px 40px rgba(10, 25, 48, 0.16), 0 32px 64px rgba(10, 25, 48, 0.1);
+  --shadow-focus: 0 0 0 4px rgba(10, 95, 210, 0.18);
+  --shadow-focus-danger: 0 0 0 4px rgba(210, 60, 52, 0.16);
+  --shadow-inset: inset 0 1px 2px rgba(10, 25, 48, 0.05);
+
+  /* ---- Motion ---- */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --duration-fast: 140ms;
+  --duration-base: 220ms;
+  --duration-slow: 340ms;
+  --transition: var(--duration-base) var(--ease-in-out);
+  --transition-fast: var(--duration-fast) var(--ease-in-out);
+
+  /* ---- Layout ---- */
+  --sidebar-width: 276px;
+  --sidebar-collapsed-width: 88px;
+  --topbar-height: 72px;
+  --content-max: 1480px;
+  --page-pad: clamp(18px, 3vw, 36px);
+
+  /* ---- Z-index ---- */
+  --z-dropdown: 40;
+  --z-sticky: 50;
+  --z-overlay: 80;
+  --z-modal: 90;
+  --z-toast: 110;
+}
+
+/* ---- Dark mode ---- */
+[data-theme='dark'] {
+  color-scheme: dark;
+
+  --navy-950: #050b16;
+  --navy-900: #070f1e;
+  --navy-800: #0a1527;
+  --navy-700: #0e1f38;
+  --navy-600: #142a4d;
+  --navy: #0e1f38;
+
+  --royal: #3d86e8;
+  --royal-700: #5b9bef;
+  --royal-600: #3d86e8;
+  --royal-500: #6aa8f2;
+  --royal-200: #2c4a75;
+  --royal-100: #1c3350;
+  --royal-50: #13263d;
+
+  --ocean: #2bc3d8;
+  --ocean-700: #57d2e3;
+  --ocean-600: #2bc3d8;
+  --ocean-500: #5bd8e8;
+  --ocean-300: #2c7f92;
+  --ocean-200: #1f5d6c;
+  --ocean-100: #17434f;
+
+  --sky: #57c9ff;
+  --sky-300: #3a9dd1;
+  --sky-200: #2a6c93;
+  --sky-100: #1d4a66;
+
+  --grad-brand: linear-gradient(135deg, #2c5fa8 0%, #3d86e8 45%, #2bc3d8 100%);
+  --grad-brand-soft: linear-gradient(135deg, #142a4d 0%, #17434f 100%);
+  --grad-mist: linear-gradient(180deg, rgba(255, 255, 255, 0.02) 0%, rgba(255, 255, 255, 0) 100%);
+
+  --white: #0b1728;
+  --mist: #070f1e;
+  --mist-2: #0b1728;
+  --surface: #0d1b30;
+  --surface-raised: #11233c;
+  --surface-sunken: #070f1e;
+  --ink: #e6eef9;
+  --ink-2: #c4d2e4;
+  --muted: #8fa4bd;
+  --muted-2: #617793;
+  --line: rgba(156, 187, 224, 0.14);
+  --line-strong: rgba(156, 187, 224, 0.22);
+  --line-faint: rgba(156, 187, 224, 0.08);
+
+  --success: #2fbd8b;
+  --success-600: #45cfa0;
+  --success-bg: rgba(47, 189, 139, 0.14);
+  --success-fg: #6fd6b2;
+  --warning: #e0a23c;
+  --warning-600: #edb257;
+  --warning-bg: rgba(224, 162, 60, 0.14);
+  --warning-fg: #efc37c;
+  --danger: #e4564e;
+  --danger-600: #f06a62;
+  --danger-bg: rgba(228, 86, 78, 0.14);
+  --danger-fg: #f08f89;
+  --info: #5b9bef;
+  --info-bg: rgba(59, 134, 232, 0.16);
+  --info-fg: #8fc0f5;
+
+  --chart-1: #5b9bef;
+  --chart-2: #2bc3d8;
+  --chart-3: #8f7ff0;
+  --chart-4: #f0a34c;
+  --chart-5: #45cfa0;
+  --chart-6: #f06a62;
+  --chart-7: #b58be8;
+  --chart-8: #54b4e8;
+
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(0, 0, 0, 0.32);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.42), 0 12px 28px rgba(0, 0, 0, 0.36);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.46), 0 24px 48px rgba(0, 0, 0, 0.4);
+  --shadow-xl: 0 16px 40px rgba(0, 0, 0, 0.55), 0 32px 64px rgba(0, 0, 0, 0.5);
+  --shadow-focus: 0 0 0 4px rgba(91, 155, 239, 0.22);
+  --shadow-focus-danger: 0 0 0 4px rgba(228, 86, 78, 0.2);
+  --shadow-inset: inset 0 1px 2px rgba(0, 0, 0, 0.3);
+}

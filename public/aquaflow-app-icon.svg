@@ -1,0 +1,25 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">AquaFlow Shipping app icon</title>
+  <desc id="desc">A premium square app icon with a ship and wave motif</desc>
+  <defs>
+    <linearGradient id="iconBg" x1="64" y1="64" x2="448" y2="448" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0a1930" />
+      <stop offset="0.55" stop-color="#0d2c52" />
+      <stop offset="1" stop-color="#0a5fd2" />
+    </linearGradient>
+    <linearGradient id="iconWave" x1="120" y1="340" x2="392" y2="340" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#57c9ff" />
+      <stop offset="1" stop-color="#d9f5f9" />
+    </linearGradient>
+  </defs>
+  <rect x="32" y="32" width="448" height="448" rx="108" fill="url(#iconBg)" />
+  <path d="M116 320C152 296 188 296 224 320C260 344 296 344 332 320C368 296 404 296 396 320V356H116V320Z" fill="url(#iconWave)" opacity="0.9" />
+  <path d="M132 214H156L166 176H198L206 214H246L256 154H292L302 214H356V246H132V214Z" fill="#FFFFFF" />
+  <path d="M170 176L202 144L206 176H170Z" fill="#57c9ff" />
+  <path d="M294 154H332L356 214H302L294 154Z" fill="#57c9ff" />
+  <rect x="142" y="214" width="228" height="38" rx="19" fill="#060f1d" />
+  <circle cx="198" cy="284" r="12" fill="#FFFFFF" opacity="0.95" />
+  <circle cx="250" cy="284" r="12" fill="#FFFFFF" opacity="0.95" />
+  <circle cx="302" cy="284" r="12" fill="#FFFFFF" opacity="0.95" />
+  <path d="M126 372H386" stroke="#EAFBFF" stroke-width="12" stroke-linecap="round" opacity="0.7" />
+</svg>

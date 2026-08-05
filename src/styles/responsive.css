@@ -1,0 +1,366 @@
+/* ============================================================
+   AquaFlow — Responsive Layout
+   Mobile-first breakpoints aligned with the design system
+   ============================================================ */
+
+/* ---- Wide desktops: tighten the global search ---- */
+@media (max-width: 1400px) {
+  .topbar {
+    gap: 16px;
+  }
+
+  .topbar-search {
+    flex-basis: 440px;
+    max-width: 440px;
+  }
+}
+
+/* ---- Desktops: compact search, hide username ---- */
+@media (max-width: 1200px) {
+  .topbar-search {
+    flex-basis: 400px;
+    max-width: 400px;
+  }
+
+  .topbar-user-name {
+    display: none;
+  }
+}
+
+/* ---- Large tablets & small desktops ---- */
+@media (max-width: 1180px) {
+  .grid-4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .grid-3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .chart-shell {
+    min-width: 0;
+  }
+}
+
+/* ---- Tablet: collapse the desktop rail ---- */
+@media (max-width: 1024px) {
+  .app-shell,
+  .app-shell.is-sidebar-collapsed {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sidebar--desktop {
+    display: none;
+  }
+
+  .topbar-menu-btn {
+    display: inline-grid;
+    place-items: center;
+  }
+
+  .topbar-sidebar-btn {
+    display: none;
+  }
+
+  .spec-list {
+    grid-template-columns: 1fr;
+  }
+
+  .app-content {
+    padding-top: 20px;
+  }
+}
+
+/* ---- Narrow desktops & large tablets: actions into menu ---- */
+@media (max-width: 992px) {
+  .topbar-quick-actions {
+    display: none;
+  }
+
+  .topbar-more {
+    display: block;
+  }
+}
+
+/* ---- Landscape phones & narrow tablets ---- */
+@media (max-width: 900px) {
+  .auth-page {
+    grid-template-columns: 1fr;
+  }
+
+  .auth-hero-panel {
+    padding: 32px;
+  }
+
+  .auth-hero-stats {
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+  .settings-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-hero-actions {
+    flex-wrap: wrap;
+  }
+
+  .profile-hero-stats {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .chat-input {
+    flex-direction: column;
+  }
+}
+
+/* ---- Tablets & below: search drops to a second row ---- */
+@media (max-width: 768px) {
+  .topbar {
+    flex-wrap: wrap;
+    gap: 10px 16px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    min-height: auto;
+  }
+
+  .topbar-left {
+    order: 1;
+    flex: 1 1 auto;
+  }
+
+  .topbar-right {
+    order: 2;
+    flex: 0 0 auto;
+  }
+
+  .topbar-search {
+    order: 3;
+    flex: 1 1 100%;
+    margin-inline: 0;
+    min-width: 0;
+    max-width: none;
+  }
+
+  .topbar-brand-title {
+    display: none;
+  }
+}
+
+/* ---- Portrait phones ---- */
+@media (max-width: 720px) {
+  .grid-2,
+  .grid-3,
+  .grid-4 {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .chart-span-2 {
+    grid-column: span 1;
+  }
+
+  .page-head-row {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .page-head-actions {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .dashboard-hero {
+    align-items: stretch;
+    padding: 22px;
+    gap: 18px;
+  }
+
+  .profile-hero {
+    padding: 22px;
+    gap: 18px;
+  }
+
+  .profile-hero-top {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .profile-hero-actions {
+    width: 100%;
+  }
+
+  .profile-hero-actions .btn {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .profile-hero-stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .dashboard-hero-content {
+    max-width: none;
+  }
+
+  .dashboard-hero-actions {
+    width: 100%;
+  }
+
+  .stat-card {
+    padding: 16px;
+  }
+
+  .support-cards,
+  .faq-search {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .settings-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .app-footer {
+    flex-direction: column;
+    text-align: center;
+    align-items: center;
+  }
+
+  .app-footer-links {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .segmented {
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  .pagination {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .modal-body {
+    padding: 20px;
+  }
+
+  .otp-row {
+    gap: 10px;
+  }
+
+  .table-wrap {
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* ---- Small phones ---- */
+@media (max-width: 520px) {
+  .topbar {
+    padding: 8px 14px;
+    gap: 8px 12px;
+  }
+
+  .topbar-right {
+    gap: 8px;
+  }
+
+  .topbar-icon-btn,
+  .topbar-menu-btn {
+    width: 36px;
+    height: 36px;
+  }
+
+  .topbar-logo-badge {
+    width: 38px;
+    height: 38px;
+  }
+
+  .auth-form-panel {
+    padding: 24px 16px;
+  }
+
+  .auth-hero-panel {
+    padding: 24px;
+  }
+
+  .row {
+    gap: 8px;
+  }
+
+  .page-head h1 {
+    font-size: var(--text-2xl);
+  }
+
+  .dashboard-hero {
+    padding: 20px;
+  }
+
+  .dashboard-hero-badge {
+    font-size: 10px;
+  }
+
+  .profile-hero {
+    padding: 20px;
+  }
+
+  .profile-hero-rings {
+    width: 280px;
+    height: 280px;
+    top: -110px;
+    right: -70px;
+  }
+
+  .profile-avatar .avatar--xl {
+    width: 72px;
+    height: 72px;
+    font-size: 24px;
+  }
+
+  .profile-hero-identity {
+    gap: 14px;
+  }
+
+  .profile-hero-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-hero-stat {
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+  }
+
+  .profile-hero-stat-icon {
+    margin-bottom: 0;
+  }
+
+  .profile-hero-stat-label {
+    flex: 1;
+  }
+
+  .profile-hero-stat-value {
+    font-size: 1.25rem;
+  }
+
+  .profile-hero-tags .badge {
+    font-size: 11px;
+  }
+
+  .profile-timeline-time {
+    display: none;
+  }
+
+  .stepper {
+    gap: 8px;
+  }
+}
+
+/* ---- Landscape on short viewports ---- */
+@media (max-height: 560px) and (max-width: 1024px) {
+  .app-content {
+    padding-top: 16px;
+  }
+}

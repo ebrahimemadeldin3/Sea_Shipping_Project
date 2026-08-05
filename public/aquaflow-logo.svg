@@ -1,0 +1,29 @@
+<svg width="512" height="160" viewBox="0 0 512 160" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">AquaFlow Shipping logo</title>
+  <desc id="desc">A premium cargo ship sailing over layered waves</desc>
+  <defs>
+    <linearGradient id="logoWave" x1="24" y1="120" x2="208" y2="120" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#57c9ff" />
+      <stop offset="1" stop-color="#00a3bf" />
+    </linearGradient>
+    <linearGradient id="logoShip" x1="62" y1="24" x2="178" y2="112" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0d2c52" />
+      <stop offset="1" stop-color="#0a5fd2" />
+    </linearGradient>
+  </defs>
+  <rect width="512" height="160" rx="24" fill="#FFFFFF" />
+  <g transform="translate(24 22)">
+    <path d="M24 86C40 76 56 76 72 86C88 96 104 96 120 86C136 76 152 76 168 86" stroke="url(#logoWave)" stroke-width="10" stroke-linecap="round" />
+    <path d="M18 104C34 94 50 94 66 104C82 114 98 114 114 104C130 94 146 94 162 104" stroke="#8edcff" stroke-width="6" stroke-linecap="round" opacity="0.75" />
+    <path d="M18 60H28L34 42H52L58 60H86L92 34H112L118 60H146V70H18V60Z" fill="url(#logoShip)" />
+    <path d="M34 42L52 28L58 42H34Z" fill="#57c9ff" />
+    <path d="M114 34H136L146 60H118L114 34Z" fill="#57c9ff" />
+    <rect x="24" y="60" width="130" height="14" rx="7" fill="#060f1d" />
+    <circle cx="52" cy="92" r="7" fill="#00a3bf" />
+    <circle cx="78" cy="92" r="7" fill="#00a3bf" />
+    <circle cx="104" cy="92" r="7" fill="#00a3bf" />
+    <circle cx="130" cy="92" r="7" fill="#00a3bf" />
+  </g>
+  <text x="226" y="70" fill="#0d2c52" font-family="Manrope, Inter, Segoe UI, Arial, sans-serif" font-size="30" font-weight="800" letter-spacing="-0.5">AquaFlow Shipping</text>
+  <text x="226" y="104" fill="#5b6b81" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="16" font-weight="500" letter-spacing="1.5">WATER SHIPPING &amp; LOGISTICS PLATFORM</text>
+</svg>
