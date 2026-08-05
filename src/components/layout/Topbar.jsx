@@ -6,7 +6,6 @@ import { useNotifications } from '../../store/NotificationsProvider'
 import { Avatar } from '../ui/display'
 import Icon from '../Icon'
 import { useClickOutside } from '../../hooks'
-import logo from '../../assets/logo.png'
 
 export function Topbar({ onMenuClick, onSearch, sidebarCollapsed, onToggleSidebar }) {
   const { user, logout, hasPermission } = useAuth()
@@ -65,12 +64,6 @@ export function Topbar({ onMenuClick, onSearch, sidebarCollapsed, onToggleSideba
         >
           <Icon name={sidebarCollapsed ? 'chevrons-right' : 'chevrons-left'} size={18} />
         </button>
-        <Link to="/dashboard" className="topbar-logo" aria-label="AquaFlow home">
-          <span className="topbar-logo-badge">
-            <img src={logo} alt="AquaFlow" className="topbar-logo-mark" />
-          </span>
-          <span className="topbar-brand-title">AquaFlow <strong>Command</strong></span>
-        </Link>
       </div>
 
       <form className={`topbar-search ${searchOpen ? 'is-focused' : ''}`} onSubmit={handleSearch} role="search">

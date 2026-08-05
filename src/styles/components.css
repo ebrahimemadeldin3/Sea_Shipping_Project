@@ -76,67 +76,9 @@
   padding: 0 10px;
 }
 
-.sidebar-brand {
-  display: flex;
-  align-items: center;
-  padding: 18px 8px 10px;
-}
-
-.sidebar-brand-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  min-width: 0;
-}
-
-.sidebar-logo {
-  width: 36px;
-  height: 36px;
-  flex-shrink: 0;
-  border-radius: 10px;
-  overflow: hidden;
-  background: var(--grad-brand);
-  display: grid;
-  place-items: center;
-  box-shadow: var(--shadow-sm);
-}
-
-.sidebar-logo img,
-.sidebar-logo-card {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.sidebar-logo-card {
-  display: grid;
-  place-items: center;
-  color: #fff;
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-size: 17px;
-  letter-spacing: -0.02em;
-}
-
-.sidebar-collapse-btn {
-  width: 30px;
-  height: 30px;
-  display: grid;
-  place-items: center;
-  border-radius: var(--radius-sm);
-  color: var(--muted);
-  transition: all var(--transition-fast);
-  flex-shrink: 0;
-}
-
-.sidebar-collapse-btn:hover {
-  background: var(--mist-2);
-  color: var(--ink);
-}
-
 .sidebar-nav {
   flex: 1;
-  padding: 6px 0 16px;
+  padding: 16px 0 16px;
 }
 
 .sidebar-section {
@@ -236,15 +178,6 @@
   display: none;
 }
 
-.is-collapsed .sidebar-logo {
-  width: 34px;
-  height: 34px;
-}
-
-.is-collapsed .sidebar-collapse-btn {
-  transform: rotate(180deg);
-}
-
 .sidebar-user {
   display: flex;
   align-items: center;
@@ -323,12 +256,12 @@
   border-bottom: 1px solid var(--line);
 }
 
-/* ---- Left: toggle + logo + breadcrumb ---- */
+/* ---- Left: toggle buttons ---- */
 .topbar-left {
   display: flex;
   align-items: center;
   gap: 16px;
-  flex: 1 2 auto;
+  flex: 0 0 auto;
   justify-content: flex-start;
   min-width: 0;
 }
@@ -355,44 +288,6 @@
 
 .topbar-menu-btn {
   display: none;
-}
-
-.topbar-logo {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-width: 0;
-  flex-shrink: 1;
-}
-
-.topbar-logo-badge {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  overflow: hidden;
-  background: var(--grad-brand);
-  display: grid;
-  place-items: center;
-  flex-shrink: 0;
-  box-shadow: var(--shadow-sm);
-}
-
-.topbar-logo-mark {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
-.topbar-brand-title {
-  font-family: var(--font-display);
-  font-weight: 600;
-  font-size: 18px;
-  letter-spacing: -0.02em;
-  color: var(--ink);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  min-width: 0;
 }
 
 /* ---- Center: global search ---- */
@@ -458,7 +353,7 @@
   display: flex;
   align-items: center;
   gap: 16px;
-  flex: 1 2 auto;
+  flex: 0 0 auto;
   justify-content: flex-end;
   min-width: 0;
 }

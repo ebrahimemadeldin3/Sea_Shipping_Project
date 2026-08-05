@@ -7,9 +7,8 @@ import { Avatar } from '../ui/display'
 import { Badge } from '../ui/feedback'
 import Icon from '../Icon'
 import { useNavigate } from '../../router/Router'
-import logo from '../../assets/logo.png'
 
-export function SidebarContent({ onNavigate, collapsed = false, onToggleCollapse }) {
+export function SidebarContent({ onNavigate, collapsed = false }) {
   const { user, logout, hasPermission } = useAuth()
   const { unreadCount } = useNotifications()
   const navigate = useNavigate()
@@ -32,25 +31,6 @@ export function SidebarContent({ onNavigate, collapsed = false, onToggleCollapse
 
   return (
     <>
-      <div className="sidebar-brand">
-        <div className="sidebar-brand-row">
-          <NavLink to="/dashboard" className="sidebar-logo-card" onClick={onNavigate} aria-label="AquaFlow dashboard">
-            <img src={logo} alt="AquaFlow Shipping" className="sidebar-logo" />
-          </NavLink>
-          {onToggleCollapse && (
-            <button
-              type="button"
-              className="sidebar-collapse-btn"
-              onClick={onToggleCollapse}
-              aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-              title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-            >
-              <Icon name={collapsed ? 'chevrons-right' : 'chevrons-left'} size={17} />
-            </button>
-          )}
-        </div>
-      </div>
-
       <nav className="sidebar-nav" aria-label="Primary navigation">
         {visibleSections.map((section) => (
           <div key={section.label} className="sidebar-section">

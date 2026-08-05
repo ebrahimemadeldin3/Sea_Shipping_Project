@@ -142,10 +142,6 @@
     min-width: 0;
     max-width: none;
   }
-
-  .topbar-brand-title {
-    display: none;
-  }
 }
 
 /* ---- Portrait phones ---- */
@@ -270,11 +266,6 @@
   .topbar-menu-btn {
     width: 36px;
     height: 36px;
-  }
-
-  .topbar-logo-badge {
-    width: 38px;
-    height: 38px;
   }
 
   .auth-form-panel {

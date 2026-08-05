@@ -19,10 +19,7 @@ export function AppShell({ children, onSearch }) {
         Skip to main content
       </a>
       <aside className={`sidebar sidebar--desktop ${sidebarCollapsed ? 'is-collapsed' : ''}`}>
-        <SidebarContent
-          collapsed={sidebarCollapsed}
-          onToggleCollapse={() => setSidebarCollapsed((collapsed) => !collapsed)}
-        />
+        <SidebarContent collapsed={sidebarCollapsed} />
       </aside>
 
       <div className="app-main">
