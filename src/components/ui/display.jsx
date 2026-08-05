@@ -1,4 +1,4 @@
-import { memo, useId, useMemo, useState } from 'react'
+import { memo, useId, useEffect, useMemo, useState } from 'react'
 import Icon from '../Icon'
 import { StatusChip } from './feedback'
 import { Breadcrumbs } from './navigation'
@@ -52,10 +52,54 @@ export const Avatar = memo(function Avatar({ name, src, size = 'md', tone = 'bra
   )
 })
 
-export const StatCard = memo(function StatCard({ label, value, delta, icon, hint, chart }) {
+function AnimatedStatValue({ value }) {
+  const parsed = useMemo(() => {
+    const m = String(value).match(/^([^\d]*)([\d,]+(?:\.\d+)?)(.*)$/)
+    if (!m) return null
+    return {
+      prefix: m[1],
+      number: parseFloat(m[2].replace(/,/g, '')),
+      suffix: m[3],
+      decimals: (m[2].split('.')[1] || '').length,
+    }
+  }, [value])
+
+  const [display, setDisplay] = useState(0)
+
+  useEffect(() => {
+    if (!parsed) return
+    let raf
+    const start = performance.now()
+    const duration = 900
+    const tick = (now) => {
+      const t = Math.min(1, (now - start) / duration)
+      const eased = 1 - Math.pow(1 - t, 3)
+      setDisplay(parsed.number * eased)
+      if (t < 1) raf = requestAnimationFrame(tick)
+    }
+    raf = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(raf)
+  }, [parsed])
+
+  if (!parsed) return <strong className="stat-value">{value}</strong>
+
+  const formatted = parsed.decimals
+    ? display.toFixed(parsed.decimals)
+    : Math.round(display).toLocaleString('en-US')
+
+  return (
+    <strong className="stat-value">
+      {parsed.prefix}
+      {formatted}
+      {parsed.suffix}
+    </strong>
+  )
+}
+
+export const StatCard = memo(function StatCard({ label, value, delta, icon, hint, chart, style }) {
   const positive = typeof delta === 'number' ? delta >= 0 : String(delta).startsWith('+')
   return (
-    <div className="stat-card">
+    <div className="stat-card" style={style}>
       <div className="stat-card-top">
         <span className="stat-icon stat-icon--brand" aria-hidden="true">
           <Icon name={icon || 'chart'} size={19} />
@@ -69,7 +113,7 @@ export const StatCard = memo(function StatCard({ label, value, delta, icon, hint
       </div>
       <div className="stat-card-body">
         <span className="stat-label">{label}</span>
-        <strong className="stat-value">{value}</strong>
+        <AnimatedStatValue value={value} />
         {hint && <span className="stat-hint">{hint}</span>}
       </div>
       {chart}

@@ -1,7 +1,17 @@
 import { useState } from 'react'
 import Icon from '../Icon'
 
-export function ShipMap({ ports = [], ships = [], routes = [], height = 420, className = '', onSelectShip, selectedShipId }) {
+export function ShipMap({
+  ports = [],
+  ships = [],
+  routes = [],
+  height = 420,
+  className = '',
+  onSelectShip,
+  selectedShipId,
+  live = false,
+  showPortLabels = false,
+}) {
   const [tooltip, setTooltip] = useState(null)
   const W = 900
   const H = height
@@ -19,6 +29,8 @@ export function ShipMap({ ports = [], ships = [], routes = [], height = 420, cla
     const pts = [project(route.from.lat, route.from.lng), ...(route.waypoints || []).map((p) => project(p.lat, p.lng)), project(route.to.lat, route.to.lng)]
     return pts.map((p, i) => (i === 0 ? `M${p.x},${p.y}` : `Q${(p.x + pts[i - 1].x) / 2},${p.y} ${p.x},${p.y}`)).join(' ')
   }
+
+  const statusClass = (status) => String(status || '').toLowerCase().replace(/[^a-z0-9]+/g, '-')
 
   return (
     <div className={`ship-map ${className}`}>
@@ -48,10 +60,15 @@ export function ShipMap({ ports = [], ships = [], routes = [], height = 420, cla
               transform={`translate(${p.x},${p.y})`}
               onMouseEnter={() => setTooltip({ x: p.x, y: p.y, content: `${port.name} · ${port.vesselsInPort} vessels` })}
               onMouseLeave={() => setTooltip(null)}
-              className="ship-map-port"
+              className={`ship-map-port ${active ? 'is-active' : ''}`}
             >
               <circle r={active ? 14 : 11} className="ship-map-port-halo" />
               <circle r={active ? 5 : 4} className="ship-map-port-core" />
+              {showPortLabels && (
+                <text y={22} textAnchor="middle" className="ship-map-port-label">
+                  {port.name}
+                </text>
+              )}
             </g>
           )
         })}
@@ -68,7 +85,7 @@ export function ShipMap({ ports = [], ships = [], routes = [], height = 420, cla
               tabIndex={0}
               role="button"
               aria-label={`${ship.name}, ${ship.status}, heading ${ship.heading} degrees`}
-              className={`ship-map-vessel ${selected ? 'is-selected' : ''}`}
+              className={`ship-map-vessel is-${statusClass(ship.status)} ${selected ? 'is-selected' : ''} ${live ? 'is-live' : ''}`}
               onMouseEnter={() => setTooltip({ x: p.x, y: p.y, content: `${ship.name} · ${ship.status} · ${ship.speed}` })}
               onMouseLeave={() => setTooltip(null)}
             >
@@ -76,6 +93,12 @@ export function ShipMap({ ports = [], ships = [], routes = [], height = 420, cla
                 <path d="M0,-10 L4,8 L0,5 L-4,8 Z" />
               </g>
               {selected && <circle r={18} className="ship-map-selected-ring" />}
+              {live && <circle r={10} className="ship-map-pulse" />}
+              {selected && (
+                <text y={30} textAnchor="middle" className="ship-map-vessel-label">
+                  {ship.name}
+                </text>
+              )}
             </g>
           )
         })}

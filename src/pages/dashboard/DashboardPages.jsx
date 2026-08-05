@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { PageHeader, StatCard, DataTable } from '../../components/ui/display'
 import { ChartShell, LineChart, AreaChart, BarChart, DonutChart, PieChart, HorizontalBars, HeatMap, ProgressRing } from '../../components/charts/Charts'
 import { StatusChip } from '../../components/ui/feedback'
@@ -7,11 +7,28 @@ import { useNotifications } from '../../store/NotificationsProvider'
 import { NotificationCard } from '../../components/domain/cards'
 import { useData } from '../../store/DataProvider'
 import { useAuth } from '../../store/AuthProvider'
+import Icon from '../../components/Icon'
+
+const CLOCK_MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
+function useUtcClock() {
+  const [now, setNow] = useState(() => new Date())
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 1000)
+    return () => clearInterval(id)
+  }, [])
+  return now
+}
+
+function formatUtcClock(date) {
+  const pad = (n) => String(n).padStart(2, '0')
+  return `${pad(date.getUTCDate())} ${CLOCK_MONTHS[date.getUTCMonth()]} ${date.getUTCFullYear()} · ${pad(date.getUTCHours())}:${pad(date.getUTCMinutes())}:${pad(date.getUTCSeconds())} UTC`
+}
 
 export function Dashboard() {
   const { notifications, markRead } = useNotifications()
   const { shipments, ships, analytics } = useData()
-  const { can } = useAuth()
+  const { can, user } = useAuth()
 
   const revenueLabels = useMemo(() => analytics.revenueSeries.map((d) => d.month), [analytics.revenueSeries])
   const revenueData = useMemo(() => analytics.revenueSeries.map((d) => d.value), [analytics.revenueSeries])
@@ -30,10 +47,10 @@ export function Dashboard() {
     () => [
       { label: 'Total Ships', value: String(analytics.ships), delta: '+6%', icon: 'ship', hint: 'across the fleet' },
       { label: 'Active Shipments', value: String(analytics.activeShipments), delta: '+12%', icon: 'package', hint: `${analytics.delayed} delayed` },
-      { label: 'Completed Deliveries', value: String(analytics.completedDeliveries), delta: '+8%', icon: 'check-circle', hint: 'this year' },
+      { label: 'Completed Deliveries', value: analytics.completedDeliveries.toLocaleString('en-US'), delta: '+8%', icon: 'check-circle', hint: 'this year' },
       { label: 'Monthly Revenue', value: `$${analytics.monthlyRevenue}M`, delta: '+9%', icon: 'credit-card', hint: 'rolling average' },
       { label: 'Fleet Utilization', value: `${analytics.fleetUtilization}%`, delta: '+3%', icon: 'bar-chart', hint: 'capacity booked' },
-      { label: 'Customers', value: String(analytics.customers), delta: '+18', icon: 'users', hint: 'active accounts' },
+      { label: 'Customers', value: analytics.customers.toLocaleString('en-US'), delta: '+18', icon: 'users', hint: 'active accounts' },
     ],
     [analytics],
   )
@@ -43,15 +60,32 @@ export function Dashboard() {
     { label: 'Customer', key: 'customer' },
     { label: 'Route', cell: (r) => `${r.origin} → ${r.destination}` },
     { label: 'Status', key: 'status', status: true },
+    {
+      label: 'Progress',
+      key: 'progress',
+      cell: (r) => (
+        <div className="mini-progress--row">
+          <div className="mini-progress-bar">
+            <div className="mini-progress-fill" style={{ width: `${Math.min(100, Math.max(0, r.progress ?? 0))}%` }} />
+          </div>
+          <span className="mini-progress-label">{r.progress ?? 0}%</span>
+        </div>
+      ),
+    },
     { label: 'ETA', key: 'eta' },
-    { label: 'Cost', key: 'cost' },
   ]
 
-  const { user } = useAuth()
+  const now = useUtcClock()
+  const clockStr = formatUtcClock(now)
 
   return (
     <div className="page">
       <div className="dashboard-hero">
+        <div className="hero-orb hero-orb--1" aria-hidden="true" />
+        <div className="hero-orb hero-orb--2" aria-hidden="true" />
+        <div className="hero-glyph" aria-hidden="true">
+          <Icon name="ship" size={220} strokeWidth={1.2} />
+        </div>
         <div className="dashboard-hero-content">
           <div className="dashboard-hero-badge">
             <span className="hero-pulse-dot" />
@@ -74,6 +108,15 @@ export function Dashboard() {
               <span className="hero-pill-dot" /> {analytics.fleetUtilization}% Fleet Capacity Booked
             </span>
           </div>
+          <div className="hero-live-row">
+            <span className="hero-live-status">
+              <span className="hero-live-dot" /> All systems operational
+            </span>
+            <span className="hero-live-clock">
+              <Icon name="clock" size={13} />
+              {clockStr}
+            </span>
+          </div>
         </div>
         <div className="dashboard-hero-actions">
           {can('shipment.manage') && (
@@ -90,23 +133,23 @@ export function Dashboard() {
       </div>
 
       <div className="grid grid-2 grid-3 grid-4">
-        {stats.map((stat) => (
-          <StatCard key={stat.label} {...stat} />
+        {stats.map((stat, index) => (
+          <StatCard key={stat.label} {...stat} style={{ '--i': index }} />
         ))}
       </div>
 
       <div className="grid grid-2 grid-3">
-        <ChartShell title="Revenue Trend" subtitle="Monthly revenue ($M)" className="chart-span-2">
+        <ChartShell title="Revenue Trend" subtitle="Monthly revenue ($M)" className="chart-span-2" style={{ '--i': 0 }}>
           <LineChart series={[{ name: 'Revenue', data: revenueData }, { name: 'Operating cost', data: costData }]} labels={revenueLabels} height={260} />
         </ChartShell>
-        <ChartShell title="Shipment Status" subtitle="Distribution of active shipments">
+        <ChartShell title="Shipment Status" subtitle="Distribution of active shipments" style={{ '--i': 1 }}>
           <DonutChart data={analytics.statusDistribution} centerLabel={String(analytics.activeShipments)} centerSub="active" height={250} />
         </ChartShell>
 
-        <ChartShell title="Monthly Deliveries" subtitle="Completed deliveries per month">
+        <ChartShell title="Monthly Deliveries" subtitle="Completed deliveries per month" style={{ '--i': 2 }}>
           <BarChart series={[{ name: 'Deliveries', data: deliveryData }]} labels={deliveryLabels} height={250} />
         </ChartShell>
-        <ChartShell title="Fleet Utilization" subtitle="Booked vs available capacity">
+        <ChartShell title="Fleet Utilization" subtitle="Booked vs available capacity" style={{ '--i': 3 }}>
           <div style={{ display: 'flex', justifyContent: 'center', gap: 32, alignItems: 'center', flexWrap: 'wrap' }}>
             <ProgressRing value={analytics.fleetUtilization} size={120} label="Fleet utilization" />
             <div className="stack stack--sm">
@@ -124,17 +167,17 @@ export function Dashboard() {
           </div>
         </ChartShell>
 
-        <ChartShell title="Port Activity" subtitle="Vessel traffic index by port" className="chart-span-2">
+        <ChartShell title="Port Activity" subtitle="Vessel traffic index by port" className="chart-span-2" style={{ '--i': 4 }}>
           <HorizontalBars data={analytics.portActivity} height={260} />
         </ChartShell>
 
-        <ChartShell title="Fuel Consumption" subtitle="Tons consumed per month">
+        <ChartShell title="Fuel Consumption" subtitle="Tons consumed per month" style={{ '--i': 5 }}>
           <AreaChart values={analytics.fuelConsumption.map((d) => d.consumption)} labels={analytics.fuelConsumption.map((d) => d.month)} height={250} />
         </ChartShell>
-        <ChartShell title="Cargo Distribution" subtitle="By cargo type">
+        <ChartShell title="Cargo Distribution" subtitle="By cargo type" style={{ '--i': 6 }}>
           <PieChart data={analytics.cargoDistribution} height={250} />
         </ChartShell>
-        <ChartShell title="Customer Growth" subtitle="Active customers">
+        <ChartShell title="Customer Growth" subtitle="Active customers" style={{ '--i': 7 }}>
           <LineChart series={[{ name: 'Customers', data: customerData }]} labels={customerLabels} height={250} />
         </ChartShell>
       </div>
@@ -190,9 +233,22 @@ export function Dashboard() {
                     <strong>{ship.name}</strong>
                     <span>
                       {ship.type} · {ship.currentPort}
+                      {ship.nextPort && ship.nextPort !== ship.currentPort ? ` → ${ship.nextPort}` : ''}
                     </span>
                   </div>
-                  <StatusChip status={ship.status} />
+                  <div className="fleet-row-side">
+                    <StatusChip status={ship.status} />
+                    <div className="fleet-row-meta">
+                      <span className="fleet-row-meta-label">Utilization</span>
+                      <span className="fleet-row-meta-value">{ship.utilization}%</span>
+                    </div>
+                    <div className="mini-progress mini-progress--sm">
+                      <div
+                        className="mini-progress-fill"
+                        style={{ width: `${Math.min(100, Math.max(0, Number(ship.utilization) || 0))}%` }}
+                      />
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>

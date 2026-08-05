@@ -61,9 +61,9 @@ function smoothPath(points) {
     )
 }
 
-export const ChartShell = memo(function ChartShell({ title, subtitle, legend, height = 240, children, className = '', empty }) {
+export const ChartShell = memo(function ChartShell({ title, subtitle, legend, height = 240, children, className = '', empty, style }) {
   return (
-    <div className={`chart-shell ${className}`}>
+    <div className={`chart-shell ${className}`} style={style}>
       {(title || legend) && (
         <div className="chart-shell-head">
           <div>
@@ -136,7 +136,7 @@ export const LineChart = memo(function LineChart({ series, labels, height = 240,
           })}
         {built.map((s, si) => (
           <g key={si}>
-            <path d={smooth ? smoothPath(s.points) : linePath(s.points)} fill="none" className={`chart-line chart-line--${si % 5}`} />
+            <path d={smooth ? smoothPath(s.points) : linePath(s.points)} fill="none" pathLength={1} className={`chart-line chart-line--${si % 5}`} />
             {showPoints &&
               s.points.map((p, i) => (
                 <circle key={i} cx={p[0]} cy={p[1]} r={3.2} className="chart-point">
@@ -188,8 +188,8 @@ export const AreaChart = memo(function AreaChart({ values, labels, height = 240,
               </g>
             )
           })}
-        <path d={areaPath} fill={`url(#${gid})`} />
-        <path d={topLine} fill="none" className="chart-area-line" />
+        <path d={areaPath} fill={`url(#${gid})`} pathLength={1} />
+        <path d={topLine} fill="none" pathLength={1} className="chart-area-line" />
         {labels &&
           labels.map((label, i) => {
             const x = i === 0 ? pad.left : pad.left + (i / (labels.length - 1)) * plotW
@@ -246,7 +246,7 @@ export const BarChart = memo(function BarChart({ series, labels, height = 240 })
                 width={barW}
                 height={Math.max(barH, 0)}
                 rx={Math.min(6, barW / 2)}
-                className={`chart-bar chart-bar--${si % 5}`}
+                className={`chart-bar-rect chart-bar--${si % 5}`}
               >
                 <title>{`${label} · ${s.name}: ${value}`}</title>
               </rect>

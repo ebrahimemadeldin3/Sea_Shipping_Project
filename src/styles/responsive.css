@@ -25,6 +25,10 @@
   .topbar-user-name {
     display: none;
   }
+
+  .hero-glyph {
+    display: none;
+  }
 }
 
 /* ---- Large tablets & small desktops ---- */
@@ -113,6 +117,19 @@
   .chat-input {
     flex-direction: column;
   }
+
+  .tracking-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .tracking-side {
+    border-left: none;
+    border-top: 1px solid var(--line);
+  }
+
+  .tracking-map .ship-map {
+    min-height: 380px;
+  }
 }
 
 /* ---- Tablets & below: search drops to a second row ---- */
@@ -154,6 +171,15 @@
 
   .chart-span-2 {
     grid-column: span 1;
+  }
+
+  .tracking-detail-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .tracking-live-count {
+    flex-basis: 100%;
+    margin-left: 0;
   }
 
   .page-head-row {
