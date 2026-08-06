@@ -139,13 +139,6 @@ const paths = {
       <path d="M21 12H9" />
     </>
   ),
-  login: (
-    <>
-      <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
-      <path d="m10 17 5-5-5-5" />
-      <path d="M15 12H3" />
-    </>
-  ),
   search: (
     <>
       <circle cx="11" cy="11" r="8" />
@@ -423,6 +416,23 @@ const paths = {
       <path d="M19 17h-4a4 4 0 0 1-4-4v-1" />
     </>
   ),
+  layers: (
+    <>
+      <path d="m12 2 9 5-9 5-9-5 9-5Z" />
+      <path d="m3 12 9 5 9-5" />
+      <path d="m3 17 9 5 9-5" />
+    </>
+  ),
+  maximize: <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />,
+  minimize: <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3" />,
+  locate: (
+    <>
+      <circle cx="12" cy="12" r="8" />
+      <circle cx="12" cy="12" r="2" />
+      <path d="M12 2v3m0 14v3M2 12h3m14 0h3" />
+    </>
+  ),
+  navigation: <path d="m3 11 19-9-9 19-2-8-8-2Z" />,
 }
 
 export const iconNames = Object.keys(paths)

@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
-import { PageHeader, Card, StatCard } from '../../components/ui/display'
+import { PageHeader, StatCard } from '../../components/ui/display'
 import { ShipMap } from '../../components/domain/ShipMap'
-import { StatusChip, Badge, ProgressBar, Skeleton, EmptyState } from '../../components/ui/feedback'
-import { Dropdown } from '../../components/ui/navigation'
+import { StatusChip, ProgressBar, Skeleton, EmptyState } from '../../components/ui/feedback'
 import { Button } from '../../components/ui/Button'
 import { useData } from '../../store/DataProvider'
 import Icon from '../../components/Icon'
@@ -13,7 +12,16 @@ const EXTRA_PORTS = [
   { id: 'EXT-TYO', name: 'Tokyo', vesselsInPort: 21, coordinates: { lat: 35.68, lng: 139.76 } },
 ]
 
-const FILTER_OPTIONS = ['All', 'On Route', 'Loading', 'In Port', 'Delayed', 'Maintenance']
+const FILTER_OPTIONS = ['All', 'On Route', 'In Port', 'Loading', 'Maintenance', 'Delayed']
+
+const EVENT_TYPES = ['Departed', 'Arrived', 'Delayed', 'Docked', 'Route Updated']
+const EVENT_ICONS = {
+  Departed: 'send',
+  Arrived: 'check-circle',
+  Delayed: 'alert-triangle',
+  Docked: 'anchor',
+  'Route Updated': 'compass',
+}
 
 const shortName = (name) => (name || '').replace(/^Port of\s+/i, '')
 
@@ -23,6 +31,17 @@ function daysUntil(eta) {
   return Math.max(0, Math.ceil(ms / 86400000))
 }
 
+const eventKey = (type) => String(type || '').toLowerCase().replace(/[^a-z0-9]+/g, '-')
+
+const seedEvents = (list) =>
+  list.slice(0, 7).map((s, i) => ({
+    id: `ev-${i}`,
+    type: EVENT_TYPES[(i * 2 + 1) % EVENT_TYPES.length],
+    ship: s.name,
+    route: `${s.currentPort} → ${s.nextPort}`,
+    ts: Date.now() - (i + 1) * 11000,
+  }))
+
 export function LiveTracking() {
   const { ships, ports } = useData()
   const [selected, setSelected] = useState(null)
@@ -31,6 +50,7 @@ export function LiveTracking() {
   const [liveShips, setLiveShips] = useState(ships)
   const [lastUpdate, setLastUpdate] = useState(() => Date.now())
   const [now, setNow] = useState(() => Date.now())
+  const [events, setEvents] = useState(() => seedEvents(ships))
 
   useEffect(() => {
     const timer = setTimeout(() => setLoading(false), 900)
@@ -39,6 +59,7 @@ export function LiveTracking() {
 
   useEffect(() => {
     setLiveShips(ships)
+    setEvents(seedEvents(ships))
   }, [ships])
 
   useEffect(() => {
@@ -59,12 +80,23 @@ export function LiveTracking() {
           }
         }),
       )
+      setEvents((prev) => {
+        const pool = ships.filter((s) => s.status === 'On Route')
+        const ship = pool[Math.floor(Math.random() * pool.length)] || ships[0]
+        const type = EVENT_TYPES[Math.floor(Math.random() * EVENT_TYPES.length)]
+        if (!ship) return prev
+        const next = [
+          { id: Date.now(), type, ship: ship.name, route: `${ship.currentPort} → ${ship.nextPort}`, ts: Date.now() },
+          ...prev,
+        ]
+        return next.slice(0, 9)
+      })
     }, 4000)
     return () => {
       clearInterval(clock)
       clearInterval(ais)
     }
-  }, [])
+  }, [ships])
 
   const worldPorts = useMemo(() => {
     const result = []
@@ -95,7 +127,7 @@ export function LiveTracking() {
       const key = `${s.currentPort}|${s.nextPort}`
       if (seen.has(key)) return
       seen.add(key)
-      out.push({ from, to })
+      out.push({ from, to, status: s.status, ship: s.name })
     })
     return out
   }, [ships, worldPorts])
@@ -107,20 +139,28 @@ export function LiveTracking() {
 
   const activeShip = liveShips.find((s) => s.id === selected?.id)
 
-  const speeds = ships.map((s) => parseFloat(s.speed)).filter((n) => !Number.isNaN(n))
-  const avgSpeed = speeds.length ? (speeds.reduce((a, b) => a + b, 0) / speeds.length).toFixed(1) : '—'
   const inTransit = ships.filter((s) => s.status === 'On Route').length
   const delayed = ships.filter((s) => s.status === 'Delayed').length
-  const onSchedule = ships.length ? Math.round(((ships.length - delayed) / ships.length) * 100) : 0
   const lowFuel = ships.filter((s) => s.fuelLevel < 50).length
+  const etaList = ships.map((s) => daysUntil(s.eta)).filter((n) => n != null)
+  const avgEta = etaList.length ? (etaList.reduce((a, b) => a + b, 0) / etaList.length).toFixed(1) : '—'
+  const weatherAlerts = Math.min(4, delayed + Math.ceil(lowFuel / 2))
   const secondsAgo = Math.max(0, Math.round((now - lastUpdate) / 1000))
 
   const refreshAis = () => {
     setLastUpdate(Date.now())
     setLiveShips([...ships])
+    setEvents(seedEvents(ships))
   }
 
   const etaDays = activeShip ? daysUntil(activeShip.eta) : null
+
+  const fmtAgo = (ts) => {
+    const ago = Math.max(0, Math.round((now - ts) / 1000))
+    if (ago < 5) return 'just now'
+    if (ago < 60) return `${ago}s ago`
+    return `${Math.round(ago / 60)}m ago`
+  }
 
   return (
     <div className="page">
@@ -129,144 +169,207 @@ export function LiveTracking() {
         title="Live Tracking"
         description="Real-time vessel positions, ETA, and route status across your fleet."
         actions={
-          <Dropdown
-            label="Show"
-            value={filter}
-            onChange={setFilter}
-            options={FILTER_OPTIONS.map((s) => ({ value: s, label: s }))}
-            icon="filter"
-          />
+          <Button variant="ghost" icon="refresh" onClick={refreshAis}>
+            Refresh feed
+          </Button>
         }
       />
 
-      <div className="grid grid-2 grid-3 grid-4">
-        <StatCard label="Vessels Tracked" value={ships.length} icon="ship" hint={`${inTransit} in transit now`} />
-        <StatCard label="Avg. Speed" value={`${avgSpeed} kn`} icon="waves" hint="fleet live average" />
-        <StatCard label="On Schedule" value={`${onSchedule}%`} icon="check-circle" hint={delayed ? `${delayed} vessel${delayed > 1 ? 's' : ''} delayed` : 'no vessels delayed'} />
-        <StatCard label="Fuel Warning" value={lowFuel} icon="fuel" hint="vessels below 50% reserve" />
+      <div className="tracking-kpis" aria-label="Fleet overview">
+        <StatCard label="Active Vessels" value={inTransit} delta={ships.length > 0 ? 1 : 0} icon="ship" hint={`${ships.length} total in fleet`} />
+        <StatCard label="Delayed Shipments" value={delayed} delta={delayed ? 1 : 0} icon="alert-triangle" hint={delayed ? 'needs attention' : 'all on time'} />
+        <StatCard label="Average ETA" value={`${avgEta} d`} delta={-1} icon="clock" hint="days to arrival" />
+        <StatCard label="Ports Online" value={worldPorts.length} delta={2} icon="globe" hint="live AIS coverage" />
+        <StatCard label="Weather Alerts" value={weatherAlerts} delta={0} icon="cloud-rain" hint="along active routes" />
       </div>
 
-      <Card padding="none" bodyClassName="stack">
-        <div className="tracking-livebar" aria-live="polite">
+      <div className="tracking-ticker" role="log" aria-label="Live vessel activity">
+        <span className="tracking-ticker-live">
           <span className="tracking-live-dot" aria-hidden="true" />
-          <strong>Live AIS feed</strong>
-          <span className="tracking-live-ago">
-            Updated {secondsAgo === 0 ? 'just now' : `${secondsAgo}s ago`}
-          </span>
-          <span className="tracking-live-count">
-            {visibleShips.length} of {ships.length} vessels shown
-          </span>
-          <Button variant="ghost" size="sm" icon="refresh" onClick={refreshAis}>
-            Refresh
-          </Button>
+          <strong>Live</strong>
+        </span>
+        <div className="tracking-ticker-viewport">
+          <div className="tracking-ticker-track">
+            {[...events, ...events].map((ev, i) => (
+              <span key={`${ev.id}-${i}`} className={`tracking-ticker-item tracking-ticker-item--${eventKey(ev.type)}`}>
+                <Icon name={EVENT_ICONS[ev.type] || 'waves'} size={13} />
+                <strong>{ev.ship}</strong> {ev.type}
+                <span className="tracking-ticker-route">{ev.route}</span>
+                <em>{fmtAgo(ev.ts)}</em>
+              </span>
+            ))}
+          </div>
         </div>
+        <span className="tracking-ticker-updated">Updated {secondsAgo === 0 ? 'just now' : `${secondsAgo}s ago`}</span>
+        <span className="tracking-ticker-count">
+          {visibleShips.length}/{ships.length} vessels
+        </span>
+      </div>
 
-        <div className="tracking-layout">
-          <div className="tracking-map">
-            {loading ? (
-              <Skeleton height={480} radius={0} />
-            ) : (
+      <div className="tracking-layout">
+        <div className="tracking-map">
+          {loading ? (
+            <Skeleton height={560} radius={20} />
+          ) : (
+            <>
               <ShipMap
                 ports={worldPorts}
                 ships={visibleShips}
                 routes={routes}
-                height={480}
+                height={560}
                 live
                 showPortLabels
                 selectedShipId={activeShip?.id}
                 onSelectShip={(ship) => setSelected(ship)}
               />
-            )}
+
+              <div className="map-chips" role="group" aria-label="Filter vessels by status">
+                {FILTER_OPTIONS.map((opt) => {
+                  const count = opt === 'All' ? ships.length : ships.filter((s) => s.status === opt).length
+                  return (
+                    <button
+                      key={opt}
+                      type="button"
+                      className={`map-chip ${filter === opt ? 'is-active' : ''}`}
+                      onClick={() => setFilter(opt)}
+                      aria-pressed={filter === opt}
+                    >
+                      {opt}
+                      <span className="map-chip-count">{count}</span>
+                    </button>
+                  )
+                })}
+              </div>
+
+              {activeShip && (
+                <div className="tracking-focus" role="dialog" aria-label={`Details for ${activeShip.name}`}>
+                  <div className="tracking-focus-head">
+                    <span className="tracking-focus-icon" aria-hidden="true">
+                      <Icon name="ship" size={20} />
+                    </span>
+                    <div className="tracking-focus-title">
+                      <h3>{activeShip.name}</h3>
+                      <p>{activeShip.type} · {activeShip.imo} · {activeShip.flag}</p>
+                    </div>
+                    <StatusChip status={activeShip.status} />
+                    <button type="button" className="tracking-focus-close" onClick={() => setSelected(null)} aria-label="Close vessel details">
+                      <Icon name="close" size={16} />
+                    </button>
+                  </div>
+
+                  <div className="tracking-focus-route">
+                    <span>{activeShip.currentPort} → {activeShip.nextPort}</span>
+                    <strong>{activeShip.utilization}%</strong>
+                  </div>
+                  <ProgressBar value={activeShip.utilization} showLabel label="Route progress" />
+
+                  <div className="tracking-focus-grid">
+                    <div className="voyage-cell">
+                      <span className="voyage-cell-label"><Icon name="waves" size={13} /> Speed</span>
+                      <strong>{activeShip.speed}</strong>
+                    </div>
+                    <div className="voyage-cell">
+                      <span className="voyage-cell-label"><Icon name="compass" size={13} /> Heading</span>
+                      <strong>{activeShip.heading}°</strong>
+                    </div>
+                    <div className="voyage-cell">
+                      <span className="voyage-cell-label"><Icon name="clock" size={13} /> ETA</span>
+                      <strong>
+                        {activeShip.eta}
+                        {etaDays != null && <span className="voyage-sub"> · {etaDays}d</span>}
+                      </strong>
+                    </div>
+                    <div className="voyage-cell">
+                      <span className="voyage-cell-label"><Icon name="flag" size={13} /> Next port</span>
+                      <strong>{activeShip.nextPort}</strong>
+                    </div>
+                    <div className="voyage-cell">
+                      <span className="voyage-cell-label"><Icon name="fuel" size={13} /> Fuel</span>
+                      <strong>{activeShip.fuelLevel}%</strong>
+                    </div>
+                    <div className="voyage-cell">
+                      <span className="voyage-cell-label"><Icon name="box" size={13} /> Cargo</span>
+                      <strong>{activeShip.cargoWeight}</strong>
+                    </div>
+                  </div>
+
+                  <div className="tracking-notes">
+                    <span className="tracking-notes-icon" aria-hidden="true"><Icon name="cloud" size={17} /></span>
+                    <p><strong>Weather:</strong> Calm seas, light wind · visibility excellent along the plotted route.</p>
+                  </div>
+
+                  <a href="#/fleet" className="btn btn--outline btn--sm tracking-focus-link">
+                    <Icon name="arrow-right" size={14} />
+                    Open vessel profile
+                  </a>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+
+        <aside className="tracking-side">
+          <div className="tracking-side-head">
+            <div>
+              <p className="eyebrow">Fleet</p>
+              <h2>Vessels <span className="tracking-side-count">{visibleShips.length}</span></h2>
+            </div>
+            <span className="tracking-side-hint">Click to focus on map</span>
           </div>
 
-          <aside className="tracking-side">
+          {loading ? (
             <div className="tracking-ships">
-              {visibleShips.slice(0, 6).map((ship) => (
-                <button
-                  key={ship.id}
-                  type="button"
-                  className={`tracking-ship ${activeShip?.id === ship.id ? 'is-selected' : ''}`}
-                  onClick={() => setSelected(ship)}
-                  aria-pressed={activeShip?.id === ship.id}
-                >
-                  <span className="tracking-ship-icon" aria-hidden="true"><Icon name="ship" size={17} /></span>
-                  <span className="fleet-row-copy">
-                    <strong>{ship.name}</strong>
-                    <span>{ship.currentPort} → {ship.nextPort}</span>
-                  </span>
-                  <StatusChip status={ship.status} />
-                  <span className="tracking-ship-progress" aria-hidden="true">
-                    <span className="tracking-ship-progress-bar" style={{ width: `${ship.utilization || 0}%` }} />
-                  </span>
-                </button>
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="tracking-ship-skeleton">
+                  <Skeleton height={54} radius={14} />
+                </div>
               ))}
             </div>
-
-            {activeShip ? (
-              <div className="tracking-detail">
-                <div className="tracking-detail-head">
-                  <div>
-                    <h3>{activeShip.name}</h3>
-                    <p className="tracking-detail-sub">
-                      {activeShip.type} · {activeShip.imo} · {activeShip.flag}
-                    </p>
-                  </div>
-                  <Badge tone="success" dot>Live</Badge>
-                </div>
-
-                <div className="tracking-detail-grid">
-                  <div className="voyage-cell">
-                    <span className="voyage-cell-label"><Icon name="waves" size={14} /> Speed</span>
-                    <strong>{activeShip.speed}</strong>
-                  </div>
-                  <div className="voyage-cell">
-                    <span className="voyage-cell-label"><Icon name="compass" size={14} /> Heading</span>
-                    <strong>{activeShip.heading}°</strong>
-                  </div>
-                  <div className="voyage-cell">
-                    <span className="voyage-cell-label"><Icon name="clock" size={14} /> ETA</span>
-                    <strong>
-                      {activeShip.eta}
-                      {etaDays != null && <span className="voyage-sub"> · {etaDays} days</span>}
-                    </strong>
-                  </div>
-                  <div className="voyage-cell">
-                    <span className="voyage-cell-label"><Icon name="flag" size={14} /> Next port</span>
-                    <strong>{activeShip.nextPort}</strong>
-                  </div>
-                  <div className="voyage-cell">
-                    <span className="voyage-cell-label"><Icon name="fuel" size={14} /> Fuel</span>
-                    <strong>{activeShip.fuelLevel}%</strong>
-                  </div>
-                  <div className="voyage-cell">
-                    <span className="voyage-cell-label"><Icon name="box" size={14} /> Cargo</span>
-                    <strong>{activeShip.cargoWeight}</strong>
-                  </div>
-                </div>
-
-                <div>
-                  <div className="voyage-row voyage-row--route">
-                    <span className="voyage-label">{activeShip.currentPort} → {activeShip.nextPort}</span>
-                    <span className="voyage-route-pct">{activeShip.utilization}%</span>
-                  </div>
-                  <ProgressBar value={activeShip.utilization} label="Route progress" showLabel />
-                </div>
-
-                <div className="tracking-notes">
-                  <span className="tracking-notes-icon" aria-hidden="true"><Icon name="cloud" size={18} /></span>
-                  <p><strong>Weather:</strong> Calm seas, light wind · visibility excellent along the plotted route.</p>
-                </div>
-
-                <a href="#/fleet" className="vessel-link">
-                  Open vessel profile <Icon name="arrow-right" size={15} />
-                </a>
-              </div>
-            ) : (
-              <EmptyState icon="map-pin" title="Select a vessel" description="Choose a vessel on the map or from the list to see its live details." />
-            )}
-          </aside>
-        </div>
-      </Card>
+          ) : visibleShips.length === 0 ? (
+            <EmptyState icon="ship" title="No vessels match" description="Try a different filter to see more of the fleet." />
+          ) : (
+            <div className="tracking-ships">
+              {visibleShips.map((ship, i) => {
+                const selectedFlag = activeShip?.id === ship.id
+                const shipAgo = Math.max(0, Math.round((now - lastUpdate) / 1000) + i * 7)
+                return (
+                  <button
+                    key={ship.id}
+                    type="button"
+                    className={`tracking-ship ${selectedFlag ? 'is-selected' : ''}`}
+                    onClick={() => setSelected(ship)}
+                    aria-pressed={selectedFlag}
+                  >
+                    <span className="tracking-ship-top">
+                      <span className={`tracking-ship-icon tracking-ship-icon--${ship.status ? String(ship.status).toLowerCase().replace(/[^a-z0-9]+/g, '-') : 'on-route'}`} aria-hidden="true">
+                        <Icon name="ship" size={18} />
+                      </span>
+                      <span className="tracking-ship-copy">
+                        <strong>{ship.name}</strong>
+                        <span className="tracking-ship-updated"><Icon name="clock" size={12} /> Updated {shipAgo < 60 ? `${shipAgo}s ago` : `${Math.round(shipAgo / 60)}m ago`}</span>
+                      </span>
+                      <StatusChip status={ship.status} />
+                    </span>
+                    <span className="tracking-ship-route">
+                      <span>{ship.currentPort}</span>
+                      <Icon name="arrow-right" size={14} />
+                      <span>{ship.nextPort}</span>
+                      <em>{ship.utilization}%</em>
+                    </span>
+                    <span className="tracking-ship-progress" aria-hidden="true">
+                      <span className="tracking-ship-progress-bar" style={{ width: `${ship.utilization || 0}%` }} />
+                    </span>
+                    <span className="tracking-ship-meta">
+                      <span><Icon name="clock" size={13} /> ETA {ship.eta} · {daysUntil(ship.eta) ?? '—'}d</span>
+                      <span><Icon name="waves" size={13} /> {ship.speed}</span>
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
+          )}
+        </aside>
+      </div>
     </div>
   )
 }

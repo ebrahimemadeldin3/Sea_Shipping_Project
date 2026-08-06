@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Link, useNavigate } from '../../router/Router'
 import { Button } from '../../components/ui/Button'
 import { Input, Checkbox } from '../../components/ui/inputs'
@@ -403,45 +403,5 @@ export function ResetPassword() {
         </Link>
       </p>
     </>
-  )
-}
-
-export function Welcome() {
-  const navigate = useNavigate()
-  return (
-    <div className="splash-page">
-      <div className="splash-inner">
-        <img src={logo} alt="AquaFlow" className="splash-logo" />
-        <h1 className="splash-title">Welcome to AquaFlow</h1>
-        <p className="splash-sub">The all-in-one maritime command system for fleet, shipments, ports, and finance.</p>
-        <div className="splash-wave" aria-hidden="true" />
-        <div className="row" style={{ justifyContent: 'center', marginTop: 8 }}>
-          <Button size="lg" onClick={() => navigate('/login')}>
-            Sign in
-          </Button>
-          <Button size="lg" variant="outline" onClick={() => navigate('/register')}>
-            Create account
-          </Button>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-export function Splash() {
-  const navigate = useNavigate()
-  useEffect(() => {
-    const timer = setTimeout(() => navigate('/welcome', { replace: true }), 2200)
-    return () => clearTimeout(timer)
-  }, [navigate])
-  return (
-    <div className="splash-page">
-      <div className="splash-inner">
-        <img src={logo} alt="AquaFlow" className="splash-logo" />
-        <h1 className="splash-title">AquaFlow</h1>
-        <p className="splash-sub">Shipping and logistics intelligence</p>
-        <div className="splash-wave" aria-hidden="true" />
-      </div>
-    </div>
   )
 }

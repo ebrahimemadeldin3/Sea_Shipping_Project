@@ -3,7 +3,7 @@ import { Route, Navigate, usePathname } from './router/Router'
 import { AppShell } from './components/layout/AppShell'
 import { useAuth } from './store/AuthProvider'
 import { PageSkeleton } from './components/ui/feedback'
-import { AuthLayout, Splash, Welcome, Login, Register, ForgotPassword, OTP, ResetPassword } from './pages/auth/AuthPages'
+import { AuthLayout, Login, Register, ForgotPassword, OTP, ResetPassword } from './pages/auth/AuthPages'
 import { NotFound, Forbidden } from './pages/system/SystemPages'
 
 const Dashboard = lazy(() => import('./pages/dashboard/DashboardPages').then((m) => ({ default: m.Dashboard })))
@@ -43,8 +43,6 @@ function matches(pattern, pathname) {
 }
 
 const publicRoutes = [
-  { path: '/', page: Splash },
-  { path: '/welcome', page: Welcome },
   { path: '/login', page: Login },
   { path: '/register', page: Register },
   { path: '/forgot', page: ForgotPassword },
@@ -103,13 +101,18 @@ function RouteFallback() {
 
 function AppRoutes() {
   const pathname = usePathname()
+  const { isAuthenticated } = useAuth()
+
+  if (pathname === '/') {
+    return <Navigate to={isAuthenticated ? '/dashboard' : '/login'} replace />
+  }
+
   const matched = [...publicRoutes, ...appRoutes].find((route) => matches(route.path, pathname))
 
   if (!matched) return <NotFound />
 
   const { path, page: Page, permission } = matched
   const isPublic = publicRoutes.includes(matched)
-  const bare = path === '/' || path === '/welcome'
 
   return (
     <Route
@@ -117,13 +120,9 @@ function AppRoutes() {
       element={
         isPublic ? (
           <PublicOnly>
-            {bare ? (
+            <AuthLayout>
               <Page />
-            ) : (
-              <AuthLayout>
-                <Page />
-              </AuthLayout>
-            )}
+            </AuthLayout>
           </PublicOnly>
         ) : (
           <Protected permission={permission}>
