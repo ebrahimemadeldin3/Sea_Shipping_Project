@@ -1,145 +1,93 @@
-import { lazy, Suspense } from 'react'
-import { Route, Navigate, usePathname } from './router/Router'
-import { AppShell } from './components/layout/AppShell'
-import { useAuth } from './store/AuthProvider'
-import { PageSkeleton } from './components/ui/feedback'
-import { AuthLayout, Login, Register, ForgotPassword, OTP, ResetPassword } from './pages/auth/AuthPages'
-import { NotFound, Forbidden } from './pages/system/SystemPages'
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import Landing from './pages/Landing';
+import Auth from './pages/Auth';
+import CustomerDashboard from './pages/CustomerDashboard';
+import CompanyDashboard from './pages/CompanyDashboard';
+import Profile from './pages/Profile';
+import { useState, useEffect } from 'react';
+import { initializeDemoData } from './lib/seed';
+import { getCurrentUser, logout } from './lib/auth-service';
 
-const Dashboard = lazy(() => import('./pages/dashboard/DashboardPages').then((m) => ({ default: m.Dashboard })))
-const Analytics = lazy(() => import('./pages/dashboard/DashboardPages').then((m) => ({ default: m.Analytics })))
-const ShipsList = lazy(() => import('./pages/fleet/FleetPages').then((m) => ({ default: m.ShipsList })))
-const ShipDetails = lazy(() => import('./pages/fleet/FleetPages').then((m) => ({ default: m.ShipDetails })))
-const ShipmentsList = lazy(() => import('./pages/shipment/ShipmentPages').then((m) => ({ default: m.ShipmentsList })))
-const ShipmentDetails = lazy(() => import('./pages/shipment/ShipmentPages').then((m) => ({ default: m.ShipmentDetails })))
-const CreateShipment = lazy(() => import('./pages/shipment/ShipmentPages').then((m) => ({ default: m.CreateShipment })))
-const LiveTracking = lazy(() => import('./pages/tracking/TrackingPages').then((m) => ({ default: m.LiveTracking })))
-const PortsList = lazy(() => import('./pages/ports/PortsPages').then((m) => ({ default: m.PortsList })))
-const PortDetails = lazy(() => import('./pages/ports/PortsPages').then((m) => ({ default: m.PortDetails })))
-const CustomersList = lazy(() => import('./pages/customers/CustomersPages').then((m) => ({ default: m.CustomersList })))
-const CustomerProfile = lazy(() => import('./pages/customers/CustomersPages').then((m) => ({ default: m.CustomerProfile })))
-const EmployeesList = lazy(() => import('./pages/employees/EmployeesPages').then((m) => ({ default: m.EmployeesList })))
-const EmployeeProfile = lazy(() => import('./pages/employees/EmployeesPages').then((m) => ({ default: m.EmployeeProfile })))
-const MaintenanceDashboard = lazy(() => import('./pages/maintenance/MaintenancePages').then((m) => ({ default: m.MaintenanceDashboard })))
-const MaintenanceHistory = lazy(() => import('./pages/maintenance/MaintenancePages').then((m) => ({ default: m.MaintenanceHistory })))
-const Payments = lazy(() => import('./pages/payments/PaymentsPages').then((m) => ({ default: m.Payments })))
-const Invoices = lazy(() => import('./pages/payments/PaymentsPages').then((m) => ({ default: m.Invoices })))
-const Reports = lazy(() => import('./pages/reports/ReportsPages').then((m) => ({ default: m.Reports })))
-const Export = lazy(() => import('./pages/reports/ReportsPages').then((m) => ({ default: m.Export })))
-const Notifications = lazy(() => import('./pages/notifications/NotificationsPage').then((m) => ({ default: m.Notifications })))
-const Settings = lazy(() => import('./pages/settings/SettingsPage').then((m) => ({ default: m.Settings })))
-const Support = lazy(() => import('./pages/support/SupportPages').then((m) => ({ default: m.Support })))
-const FAQ = lazy(() => import('./pages/support/SupportPages').then((m) => ({ default: m.FAQ })))
-const Tickets = lazy(() => import('./pages/support/SupportPages').then((m) => ({ default: m.Tickets })))
-const LiveChat = lazy(() => import('./pages/support/SupportPages').then((m) => ({ default: m.LiveChat })))
-const UserProfile = lazy(() => import('./pages/profile/UserProfilePage').then((m) => ({ default: m.UserProfile })))
-const SearchResults = lazy(() => import('./pages/search/SearchPage').then((m) => ({ default: m.SearchResults })))
+export default function App() {
+  const [user, setUser] = useState(null); // { id, role, ... }
+  const [loading, setLoading] = useState(true);
 
-function matches(pattern, pathname) {
-  const patternParts = pattern.split('/').filter(Boolean)
-  const pathParts = pathname.split('/').filter(Boolean)
-  if (patternParts.length !== pathParts.length) return false
-  return patternParts.every((part, i) => part.startsWith(':') || part === pathParts[i])
-}
+  useEffect(() => {
+    // 1. Initialize DB if needed
+    initializeDemoData();
 
-const publicRoutes = [
-  { path: '/login', page: Login },
-  { path: '/register', page: Register },
-  { path: '/forgot', page: ForgotPassword },
-  { path: '/reset', page: ResetPassword },
-  { path: '/otp', page: OTP },
-]
+    // 2. Restore Session
+    const loadSession = () => {
+      const currentUser = getCurrentUser();
+      setUser(currentUser || null);
+    };
+    loadSession();
+    setLoading(false);
 
-const appRoutes = [
-  { path: '/dashboard', page: Dashboard, permission: 'dashboard.view' },
-  { path: '/analytics', page: Analytics, permission: 'analytics.view' },
-  { path: '/ships', page: ShipsList, permission: 'fleet.view' },
-  { path: '/ships/:id', page: ShipDetails, permission: 'fleet.view' },
-  { path: '/shipments', page: ShipmentsList, permission: 'shipment.view' },
-  { path: '/shipments/new', page: CreateShipment, permission: 'shipment.manage' },
-  { path: '/shipments/:id', page: ShipmentDetails, permission: 'shipment.view' },
-  { path: '/tracking', page: LiveTracking, permission: 'tracking.view' },
-  { path: '/ports', page: PortsList, permission: 'port.view' },
-  { path: '/ports/:id', page: PortDetails, permission: 'port.view' },
-  { path: '/customers', page: CustomersList, permission: 'customer.view' },
-  { path: '/customers/:id', page: CustomerProfile, permission: 'customer.view' },
-  { path: '/employees', page: EmployeesList, permission: 'staff.view' },
-  { path: '/employees/:id', page: EmployeeProfile, permission: 'staff.view' },
-  { path: '/maintenance', page: MaintenanceDashboard, permission: 'maintenance.view' },
-  { path: '/maintenance/history', page: MaintenanceHistory, permission: 'maintenance.view' },
-  { path: '/payments', page: Payments, permission: 'payment.view' },
-  { path: '/invoices', page: Invoices, permission: 'invoice.view' },
-  { path: '/reports', page: Reports, permission: 'report.view' },
-  { path: '/reports/export', page: Export, permission: 'report.manage' },
-  { path: '/notifications', page: Notifications, permission: 'dashboard.view' },
-  { path: '/settings', page: Settings, permission: 'settings.view' },
-  { path: '/support', page: Support, permission: 'dashboard.view' },
-  { path: '/support/faq', page: FAQ, permission: 'dashboard.view' },
-  { path: '/support/chat', page: LiveChat, permission: 'dashboard.view' },
-  { path: '/support/tickets', page: Tickets, permission: 'ticket.view' },
-  { path: '/profile', page: UserProfile, permission: 'dashboard.view' },
-  { path: '/search', page: SearchResults, permission: 'dashboard.view' },
-  { path: '/404', page: NotFound, permission: null },
-]
+    // 3. Listen for cross-tab or manual storage events to update user
+    window.addEventListener('storage', loadSession);
+    return () => window.removeEventListener('storage', loadSession);
+  }, []);
 
-function PublicOnly({ children }) {
-  const { isAuthenticated } = useAuth()
-  if (isAuthenticated) return <Navigate to="/dashboard" replace />
-  return children
-}
+  const handleLogout = () => {
+    logout();
+    setUser(null);
+  };
 
-function Protected({ children, permission }) {
-  const { isAuthenticated, hasPermission } = useAuth()
-  if (!isAuthenticated) return <Navigate to="/login" replace />
-  if (permission && !hasPermission(permission)) return <Forbidden />
-  return children
-}
-
-function RouteFallback() {
-  return <PageSkeleton />
-}
-
-function AppRoutes() {
-  const pathname = usePathname()
-  const { isAuthenticated } = useAuth()
-
-  if (pathname === '/') {
-    return <Navigate to={isAuthenticated ? '/dashboard' : '/login'} replace />
+  if (loading) {
+    return (
+      <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--color-background)' }}>
+        <div className="skeleton-circle animate-pulse" style={{ width: '48px', height: '48px' }}></div>
+      </div>
+    );
   }
 
-  const matched = [...publicRoutes, ...appRoutes].find((route) => matches(route.path, pathname))
-
-  if (!matched) return <NotFound />
-
-  const { path, page: Page, permission } = matched
-  const isPublic = publicRoutes.includes(matched)
-
   return (
-    <Route
-      path={path}
-      element={
-        isPublic ? (
-          <PublicOnly>
-            <AuthLayout>
-              <Page />
-            </AuthLayout>
-          </PublicOnly>
-        ) : (
-          <Protected permission={permission}>
-            <AppShell>
-              <Suspense fallback={<RouteFallback />}>
-                <Page />
-              </Suspense>
-            </AppShell>
-          </Protected>
-        )
-      }
-    />
-  )
+    <Router>
+      <Routes>
+        <Route path="/" element={<Landing />} />
+        
+        {/* Auth Route */}
+        <Route 
+          path="/auth" 
+          element={
+            user ? (
+              <Navigate to={user.role === 'company' ? "/company" : "/dashboard"} replace />
+            ) : (
+              <Auth onLoginSuccess={(loggedInUser) => setUser(loggedInUser)} />
+            )
+          } 
+        />
+        
+        {/* Protected Routes */}
+        <Route 
+          path="/dashboard/*" 
+          element={
+            !user ? <Navigate to="/auth" replace /> :
+            user.role === 'customer' 
+              ? <CustomerDashboard user={user} onLogout={handleLogout} /> 
+              : <Navigate to="/company" replace />
+          } 
+        />
+        
+        <Route 
+          path="/company" 
+          element={
+            !user ? <Navigate to="/auth" replace /> :
+            user.role === 'company' 
+              ? <CompanyDashboard user={user} onLogout={handleLogout} /> 
+              : <Navigate to="/dashboard" replace />
+          } 
+        />
+        
+        <Route 
+          path="/profile" 
+          element={
+            !user ? <Navigate to="/auth" replace /> :
+            <Profile user={user} onLogout={handleLogout} />
+          } 
+        />
+      </Routes>
+    </Router>
+  );
 }
-
-function App() {
-  return <AppRoutes />
-}
-
-export default App
