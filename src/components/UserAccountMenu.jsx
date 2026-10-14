@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { UserRound, LogOut, ChevronUp, ChevronDown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-export function getInitials(fullName) {
+function getInitials(fullName) {
   if (!fullName) return '';
   const parts = fullName.trim().split(' ');
   if (parts.length >= 2) {

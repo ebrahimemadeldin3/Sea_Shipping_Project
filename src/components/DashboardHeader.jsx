@@ -112,17 +112,24 @@ export default function DashboardHeader({
                 {notifications.length === 0 ? (
                   <div style={{ padding: '2rem 1rem', textAlign: 'center', color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>No notifications yet.</div>
                 ) : (
-                  notifications.map(n => (
-                    <div key={n.id} className="notification-item" style={{ 
-                      padding: '1rem', borderBottom: '1px solid var(--color-border)', cursor: 'pointer', 
-                      backgroundColor: n.isRead ? 'transparent' : 'rgba(8, 120, 209, 0.05)',
-                      transition: 'background-color 0.2s'
-                    }} onClick={() => { onNotificationClick(n.shipmentId); }}>
-                      <div style={{ fontWeight: 600, fontSize: '0.85rem', marginBottom: '0.25rem', color: 'var(--color-text-main)' }}>{n.title}</div>
-                      <div style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>{n.message}</div>
-                      <div style={{ fontSize: '0.7rem', color: 'var(--color-text-light)', marginTop: '0.5rem' }}>{new Date(n.createdAt).toLocaleString()}</div>
-                    </div>
-                  ))
+                  notifications.map(n => {
+                    const isRead = Boolean(n.read || n.isRead);
+                    return (
+                      <div key={n.id} className="notification-item" style={{ 
+                        padding: '1rem', borderBottom: '1px solid var(--color-border)', cursor: 'pointer', 
+                        backgroundColor: isRead ? 'transparent' : 'rgba(8, 120, 209, 0.08)',
+                        transition: 'background-color 0.2s',
+                        position: 'relative'
+                      }} onClick={() => { onNotificationClick(n.shipmentId); }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
+                          <div style={{ fontWeight: 600, fontSize: '0.85rem', color: 'var(--color-text-main)' }}>{n.title}</div>
+                          {!isRead && <span style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: 'var(--color-secondary)' }}></span>}
+                        </div>
+                        <div style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>{n.message}</div>
+                        <div style={{ fontSize: '0.7rem', color: 'var(--color-text-light)', marginTop: '0.5rem' }}>{new Date(n.createdAt).toLocaleString()}</div>
+                      </div>
+                    );
+                  })
                 )}
               </div>
             </>

@@ -10,12 +10,13 @@ import { useNavigate, useLocation } from 'react-router-dom';
 
 export default function Sidebar({ 
   user, 
+  activeTab,
+  setActiveTab,
   isSidebarOpen, 
   setSidebarOpen, 
   onLogout,
   onNewShipment,
-  navItems = [],
-  newRequests = 0
+  navItems = []
 }) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const navigate = useNavigate();
@@ -95,11 +96,11 @@ export default function Sidebar({
         overflowY: 'auto'
       }}>
         {itemsToRender.map(item => {
-          const isActive = item.path 
+          const isActive = (activeTab && item.id === activeTab) || (item.path 
             ? (item.path === '/dashboard' || item.path === '/company' 
                 ? currentPath === item.path 
                 : currentPath.startsWith(item.path))
-            : false;
+            : false);
           const Icon = item.icon;
           
           return (
@@ -107,6 +108,8 @@ export default function Sidebar({
               key={item.id}
               onClick={() => { 
                 if (item.path) navigate(item.path);
+                if (setActiveTab) setActiveTab(item.id);
+                if (item.onClick) item.onClick();
                 if (window.innerWidth <= 768) setSidebarOpen(false); 
               }}
               style={{

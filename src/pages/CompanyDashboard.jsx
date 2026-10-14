@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Bell, User, Inbox, Ship, CheckCircle, Navigation, X, ArrowRight, Clock, AlertTriangle, Search, Check } from 'lucide-react';
-import Logo from '../components/Logo';
+import { Inbox, Ship, CheckCircle, Navigation, X, ArrowRight, Search, Check, AlertTriangle } from 'lucide-react';
 import { getShipments, updateShipmentStatus, generateFullTimeline, STATUS_LIST } from '../lib/shipment-service';
-import { createNotification, getUnreadCount, markAllAsRead, getNotifications } from '../lib/notification-service';
-import UserAccountMenu from '../components/UserAccountMenu';
+import { createNotification, getUnreadCount, markAllAsRead, getUserNotifications } from '../lib/notification-service';
 import DashboardHeader from '../components/DashboardHeader';
 import Sidebar from '../components/Sidebar';
 
@@ -38,12 +36,37 @@ export default function CompanyDashboard({ user, onLogout }) {
   const [statusFilter, setStatusFilter] = useState('All');
   const [isLoading, setIsLoading] = useState(true);
 
+  // Toast notification state
+  const [toastMessage, setToastMessage] = useState(null);
+  const showToast = (message, type = 'success') => {
+    setToastMessage({ message, type });
+    setTimeout(() => setToastMessage(null), 3500);
+  };
+
+  // Keyboard shortcut listener (Escape to dismiss drawers & modals)
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        if (isAcceptModalOpen) setIsAcceptModalOpen(false);
+        else if (isRejectModalOpen) setIsRejectModalOpen(false);
+        else if (isUpdateModalOpen) {
+          setIsUpdateModalOpen(false);
+          setSelectedRequest(null);
+        } else if (selectedRequest) {
+          setSelectedRequest(null);
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isAcceptModalOpen, isRejectModalOpen, isUpdateModalOpen, selectedRequest]);
+
   // Load shipments
   useEffect(() => {
     const loadData = () => {
       setShipments(getShipments());
       setUnreadNotifications(getUnreadCount(user.id));
-      setNotifications(getNotifications(user.id));
+      setNotifications(getUserNotifications(user.id));
     };
     loadData();
     const timer = setTimeout(() => setIsLoading(false), 500);
@@ -96,6 +119,7 @@ export default function CompanyDashboard({ user, onLogout }) {
     });
 
     setShipments(getShipments());
+    showToast(`Shipment ${selectedRequest.shipmentNumber} accepted and quote sent.`, 'success');
     setIsAcceptModalOpen(false);
     setSelectedRequest(null);
   };
@@ -120,6 +144,7 @@ export default function CompanyDashboard({ user, onLogout }) {
     });
 
     setShipments(getShipments());
+    showToast(`Shipment ${selectedRequest.shipmentNumber} rejected.`, 'error');
     setIsRejectModalOpen(false);
     setSelectedRequest(null);
   };
@@ -145,6 +170,7 @@ export default function CompanyDashboard({ user, onLogout }) {
     });
 
     setShipments(getShipments());
+    showToast(`Shipment ${selectedRequest.shipmentNumber} updated to ${getStatusLabel(newStatus)}.`, 'success');
     setIsUpdateModalOpen(false);
     setSelectedRequest(null);
   };
@@ -154,7 +180,7 @@ export default function CompanyDashboard({ user, onLogout }) {
     if (!isNotificationsOpen && unreadNotifications > 0) {
       markAllAsRead(user.id);
       setUnreadNotifications(0);
-      setNotifications(getNotifications(user.id));
+      setNotifications(getUserNotifications(user.id));
     }
   };
 
@@ -718,7 +744,7 @@ export default function CompanyDashboard({ user, onLogout }) {
 
       {/* Accept Request Dialog */}
       {isAcceptModalOpen && (
-        <div className="modal-overlay" style={{ zIndex: 1000 }}>
+        <div className="modal-overlay" style={{ zIndex: 1000 }} onClick={(e) => { if (e.target === e.currentTarget) setIsAcceptModalOpen(false); }}>
           <div className="modal-content" style={{ maxWidth: '600px' }}>
             <div className="modal-header">
               <h3>Accept & Schedule Shipment</h3>
@@ -784,7 +810,7 @@ export default function CompanyDashboard({ user, onLogout }) {
 
       {/* Reject Request Dialog */}
       {isRejectModalOpen && (
-        <div className="modal-overlay" style={{ zIndex: 1000 }}>
+        <div className="modal-overlay" style={{ zIndex: 1000 }} onClick={(e) => { if (e.target === e.currentTarget) setIsRejectModalOpen(false); }}>
           <div className="modal-content" style={{ maxWidth: '400px' }}>
             <div className="modal-header">
               <h3>Reject Request</h3>
@@ -808,7 +834,7 @@ export default function CompanyDashboard({ user, onLogout }) {
 
       {/* Update Status Dialog */}
       {isUpdateModalOpen && selectedRequest && (
-        <div className="modal-overlay" style={{ zIndex: 1000 }}>
+        <div className="modal-overlay" style={{ zIndex: 1000 }} onClick={(e) => { if (e.target === e.currentTarget) { setIsUpdateModalOpen(false); setSelectedRequest(null); } }}>
           <div className="modal-content" style={{ maxWidth: '500px' }}>
             <div className="modal-header">
               <h3>Update Shipment Status</h3>
@@ -844,6 +870,14 @@ export default function CompanyDashboard({ user, onLogout }) {
               <button type="submit" form="updateForm" className="btn btn-primary">Update Status</button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Action Toast Feedback */}
+      {toastMessage && (
+        <div className={`app-toast ${toastMessage.type === 'error' ? 'error' : 'success'}`}>
+          {toastMessage.type === 'error' ? <AlertTriangle size={18} color="var(--color-error)" /> : <CheckCircle size={18} color="var(--color-success)" />}
+          <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>{toastMessage.message}</span>
         </div>
       )}
 

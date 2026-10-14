@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Bell, User, Plus, Package, Clock, CheckCircle, Navigation, MapPin, X, ArrowRight, AlertTriangle, Ship, Search, Check } from 'lucide-react';
-import Logo from '../components/Logo';
+import { Package, Clock, CheckCircle, Navigation, X, ArrowRight, AlertTriangle, Ship, Search, Check, Copy } from 'lucide-react';
 import { getCustomerShipments, createShipment, generateFullTimeline, STATUS_LIST } from '../lib/shipment-service';
-import { createNotification, getUnreadCount, markAllAsRead, getNotifications } from '../lib/notification-service';
-import UserAccountMenu from '../components/UserAccountMenu';
+import { createNotification, getUnreadCount, markAllAsRead, getUserNotifications } from '../lib/notification-service';
 import DashboardHeader from '../components/DashboardHeader';
 import Sidebar from '../components/Sidebar';
-import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import Invoices from './dashboard/Invoices';
 import Support from './dashboard/Support';
 import Settings from './dashboard/Settings';
@@ -31,6 +29,7 @@ const PORTS = {
 };
 
 export default function CustomerDashboard({ user, onLogout }) {
+  const navigate = useNavigate();
   const location = useLocation();
   const path = location.pathname;
   
@@ -43,6 +42,18 @@ export default function CustomerDashboard({ user, onLogout }) {
   else if (path.includes('/invoices')) { activeTab = 'Invoices'; titleOverride = 'Invoices'; subtitleOverride = 'Manage your billing and payments.'; }
   else if (path.includes('/support')) { activeTab = 'Support'; titleOverride = 'Support'; subtitleOverride = 'Get help with your shipments and billing.'; }
   else if (path.includes('/settings')) { activeTab = 'Settings'; titleOverride = 'Settings'; subtitleOverride = 'Manage your account preferences and security.'; }
+
+  const handleTabChange = (tabName) => {
+    const routeMap = {
+      'Overview': '/dashboard',
+      'My Shipments': '/dashboard/shipments',
+      'Track Shipment': '/dashboard/track',
+      'Invoices': '/dashboard/invoices',
+      'Support': '/dashboard/support',
+      'Settings': '/dashboard/settings',
+    };
+    navigate(routeMap[tabName] || '/dashboard');
+  };
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const [isNewShipmentOpen, setIsNewShipmentOpen] = useState(false);
   const [selectedShipment, setSelectedShipment] = useState(null);
@@ -72,12 +83,47 @@ export default function CustomerDashboard({ user, onLogout }) {
   const [trackSearch, setTrackSearch] = useState('');
   const [isLoading, setIsLoading] = useState(true);
 
+  // Copy-to-clipboard state
+  const [copiedText, setCopiedText] = useState('');
+  const handleCopy = (text) => {
+    if (!text) return;
+    navigator.clipboard?.writeText(text);
+    setCopiedText(text);
+    setTimeout(() => setCopiedText(''), 2200);
+  };
+
+  // Close shipment modal and reset form
+  const closeNewShipment = React.useCallback(() => {
+    setIsNewShipmentOpen(false);
+    setNewShipmentStep(1);
+    setCreatedShipmentRef(null);
+    setFormData({
+      originCountry: '', originPort: '', destinationCountry: '', destinationPort: '',
+      cargoType: '', description: '', weight: '', quantity: '', length: '', width: '', height: '', containerType: '',
+      senderName: user.fullName, senderPhone: '', senderAddress: '',
+      receiverName: '', receiverPhone: '', receiverAddress: '', serviceType: 'Port-to-Port'
+    });
+    setFormErrors({});
+  }, [user.fullName]);
+
+  // Keyboard shortcut listener (Escape to close modals/drawers)
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        if (isNewShipmentOpen) closeNewShipment();
+        else if (selectedShipment) setSelectedShipment(null);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isNewShipmentOpen, selectedShipment, closeNewShipment]);
+
   // Load shipments
   useEffect(() => {
     const loadData = () => {
       setShipments(getCustomerShipments(user.id));
       setUnreadNotifications(getUnreadCount(user.id));
-      setNotifications(getNotifications(user.id));
+      setNotifications(getUserNotifications(user.id));
     };
     loadData();
     const timer = setTimeout(() => setIsLoading(false), 500);
@@ -164,19 +210,6 @@ export default function CustomerDashboard({ user, onLogout }) {
     setNewShipmentStep(5); // Success step
   };
 
-  const closeNewShipment = () => {
-    setIsNewShipmentOpen(false);
-    setNewShipmentStep(1);
-    setCreatedShipmentRef(null);
-    setFormData({
-      originCountry: '', originPort: '', destinationCountry: '', destinationPort: '',
-      cargoType: '', description: '', weight: '', quantity: '', length: '', width: '', height: '', containerType: '',
-      senderName: user.fullName, senderPhone: '', senderAddress: '',
-      receiverName: '', receiverPhone: '', receiverAddress: '', serviceType: 'Port-to-Port'
-    });
-    setFormErrors({});
-  };
-
   const handleTrack = () => {
     const found = shipments.find(s => s.shipmentNumber === trackSearch.trim().toUpperCase());
     if (found) {
@@ -192,7 +225,7 @@ export default function CustomerDashboard({ user, onLogout }) {
       markAllAsRead(user.id);
       setUnreadNotifications(0);
       // Reload notifications to update their isRead status visually
-      setNotifications(getNotifications(user.id));
+      setNotifications(getUserNotifications(user.id));
     }
   };
 
@@ -248,7 +281,7 @@ export default function CustomerDashboard({ user, onLogout }) {
       <Sidebar 
         user={user}
         activeTab={activeTab}
-        setActiveTab={setActiveTab}
+        setActiveTab={handleTabChange}
         isSidebarOpen={isSidebarOpen}
         setSidebarOpen={setSidebarOpen}
         onLogout={onLogout}
@@ -360,7 +393,7 @@ export default function CustomerDashboard({ user, onLogout }) {
               <div className="card">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
                   <h3>Recent Shipments</h3>
-                  <button className="btn btn-outline" onClick={() => setActiveTab('My Shipments')}>View All</button>
+                  <button className="btn btn-outline" onClick={() => navigate('/dashboard/shipments')}>View All</button>
                 </div>
                 <div className="table-container">
                   {shipments.length === 0 ? (
@@ -593,7 +626,7 @@ export default function CustomerDashboard({ user, onLogout }) {
 
       {/* New Shipment Modal / Drawer */}
       {isNewShipmentOpen && (
-        <div className="modal-overlay" style={{ zIndex: 1000, overflowY: 'auto' }}>
+        <div className="modal-overlay" style={{ zIndex: 1000, overflowY: 'auto' }} onClick={(e) => { if (e.target === e.currentTarget) closeNewShipment(); }}>
           <div className="modal-content new-shipment-modal" style={{ maxWidth: '700px', margin: '2rem auto', maxHeight: 'none' }}>
             <div className="modal-header sticky top-0" style={{ backgroundColor: 'var(--color-surface)', zIndex: 10, borderBottom: '1px solid var(--color-border)' }}>
               <h3>New Shipping Request</h3>
@@ -819,7 +852,19 @@ export default function CustomerDashboard({ user, onLogout }) {
                     
                     <div style={{ backgroundColor: 'var(--color-background)', padding: '1.5rem', borderRadius: 'var(--radius-md)', display: 'inline-block', marginBottom: '2rem', textAlign: 'left' }}>
                       <div style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Shipment Reference</div>
-                      <div style={{ fontSize: '1.5rem', fontWeight: 800, letterSpacing: '1px' }}>{createdShipmentRef?.shipmentNumber}</div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                        <div style={{ fontSize: '1.5rem', fontWeight: 800, letterSpacing: '1px' }}>{createdShipmentRef?.shipmentNumber}</div>
+                        <button
+                          type="button"
+                          className="btn btn-secondary"
+                          onClick={() => handleCopy(createdShipmentRef?.shipmentNumber)}
+                          title="Copy tracking number"
+                          style={{ padding: '0.35rem 0.65rem', display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.8rem' }}
+                        >
+                          {copiedText === createdShipmentRef?.shipmentNumber ? <Check size={14} color="var(--color-success)" /> : <Copy size={14} />}
+                          <span>{copiedText === createdShipmentRef?.shipmentNumber ? 'Copied!' : 'Copy'}</span>
+                        </button>
+                      </div>
                     </div>
 
                     <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
@@ -858,8 +903,20 @@ export default function CustomerDashboard({ user, onLogout }) {
           <div className="drawer open" style={{ maxWidth: '600px', width: '100%' }}>
             <div className="drawer-header">
               <div>
-                <h3 style={{ fontSize: '1.25rem', marginBottom: '0.25rem' }}>{selectedShipment.shipmentNumber}</h3>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem', color: 'var(--color-text-muted)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                  <h3 style={{ fontSize: '1.25rem', marginBottom: 0 }}>{selectedShipment.shipmentNumber}</h3>
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={() => handleCopy(selectedShipment.shipmentNumber)}
+                    title="Copy tracking number"
+                    style={{ padding: '0.2rem 0.5rem', display: 'flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.75rem' }}
+                  >
+                    {copiedText === selectedShipment.shipmentNumber ? <Check size={12} color="var(--color-success)" /> : <Copy size={12} />}
+                    <span>{copiedText === selectedShipment.shipmentNumber ? 'Copied' : 'Copy'}</span>
+                  </button>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem', color: 'var(--color-text-muted)', marginTop: '0.25rem' }}>
                   <span>{selectedShipment.originPort}, {selectedShipment.originCountry}</span>
                   <ArrowRight size={14} />
                   <span>{selectedShipment.destinationPort}, {selectedShipment.destinationCountry}</span>

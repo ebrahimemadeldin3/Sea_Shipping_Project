@@ -8,7 +8,8 @@ export const STATUS_LIST = [
   'IN_TRANSIT',
   'AT_DESTINATION_PORT',
   'OUT_FOR_DELIVERY',
-  'DELIVERED'
+  'DELIVERED',
+  'REJECTED'
 ];
 
 export const WORKFLOW_SEQUENCE = [
@@ -100,7 +101,6 @@ export function generateFullTimeline(shipment) {
   }
 
   const result = [];
-  let foundCurrent = false;
 
   // We go backwards through the sequence because the shipment status represents the current highest state achieved.
   // Actually, let's just go forward through the sequence and find the matching events in timeline array.
@@ -174,7 +174,7 @@ export function updateShipmentStatus(id, newStatus, additionalData = {}, timelin
   }
 
   // Update data
-  const updatedShipment = updateShipment(id, {
+  updateShipment(id, {
     status: newStatus,
     ...additionalData
   });

@@ -14,18 +14,24 @@ export default function Auth({ onLoginSuccess }) {
     setError('');
     setLoading(true);
 
-    // In a real app we wouldn't use forceRole, but for the demo "Sign In as Company Admin" button:
-    const formData = new FormData(e.target);
-    const email = formData.get('email');
-    const password = formData.get('password');
-    
-    // If they clicked the company button, we inject the demo company credentials instead of reading the form.
-    const loginEmail = forceRole === 'company' ? 'admin@navora.demo' : email;
-    const loginPassword = forceRole === 'company' ? 'Admin123!' : password;
+    let loginEmail = '';
+    let loginPassword = '';
+
+    if (forceRole === 'company') {
+      loginEmail = 'admin@navora.demo';
+      loginPassword = 'Admin123!';
+    } else if (forceRole === 'customer') {
+      loginEmail = 'ahmed@example.com';
+      loginPassword = 'password';
+    } else {
+      const formData = new FormData(e.target);
+      loginEmail = formData.get('email');
+      loginPassword = formData.get('password');
+    }
 
     try {
       // Simulate small network delay
-      await new Promise(r => setTimeout(r, 600));
+      await new Promise(r => setTimeout(r, 400));
       const user = login(loginEmail, loginPassword);
       onLoginSuccess(user);
       navigate(user.role === 'company' ? '/company' : '/dashboard');
@@ -109,16 +115,27 @@ export default function Auth({ onLoginSuccess }) {
                 <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', color: 'var(--color-text-muted)' }}>
                   <input type="checkbox" style={{ accentColor: 'var(--color-secondary)' }} /> Remember Me
                 </label>
-                <a href="#" style={{ color: 'var(--color-secondary)', fontWeight: 600, transition: 'color 0.2s' }}>Forgot Password?</a>
+                <button 
+                  type="button" 
+                  onClick={() => alert("Demo Credentials:\n\nCustomer: ahmed@example.com / password\nCompany Admin: admin@navora.demo / Admin123!")} 
+                  style={{ color: 'var(--color-secondary)', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.85rem' }}
+                >
+                  Forgot Password?
+                </button>
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                 <button type="submit" className="btn btn-primary w-full" disabled={loading}>
                   {loading ? 'Signing in...' : 'Sign In'}
                 </button>
-                <button type="button" onClick={(e) => handleLogin(e, 'company')} className="btn btn-outline w-full" disabled={loading}>
-                  Sign In as Demo Company Admin
-                </button>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginTop: '0.5rem' }}>
+                  <button type="button" onClick={(e) => handleLogin(e, 'customer')} className="btn btn-outline" style={{ fontSize: '0.8rem', padding: '0.6rem 0.5rem', textAlign: 'center' }} disabled={loading}>
+                    Demo Customer
+                  </button>
+                  <button type="button" onClick={(e) => handleLogin(e, 'company')} className="btn btn-outline" style={{ fontSize: '0.8rem', padding: '0.6rem 0.5rem', textAlign: 'center' }} disabled={loading}>
+                    Demo Company
+                  </button>
+                </div>
               </div>
               
               <div className="text-center" style={{ marginTop: '2rem', fontSize: '0.9rem' }}>

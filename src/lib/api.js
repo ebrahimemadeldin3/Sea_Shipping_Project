@@ -1,9 +1,7 @@
 import { shipments as mockShipments } from '../mocks/shipments';
 import { invoices as mockInvoices } from '../mocks/invoices';
 import { tickets as mockTickets } from '../mocks/tickets';
-import { notifications as mockNotifications } from '../mocks/notifications';
 import { activity as mockActivity } from '../mocks/activity';
-import { users as mockUsers } from '../mocks/users';
 import { getStorageItem, setStorageItem, KEYS as BASE_KEYS } from './storage';
 
 // Expand keys for new data types

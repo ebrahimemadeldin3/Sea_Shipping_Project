@@ -21,6 +21,7 @@ export function getStorageItem(key, defaultValue = null) {
 export function setStorageItem(key, value) {
   try {
     localStorage.setItem(key, JSON.stringify(value));
+    window.dispatchEvent(new StorageEvent('storage', { key }));
   } catch (error) {
     console.error(`Error writing ${key} to localStorage`, error);
   }
@@ -29,7 +30,9 @@ export function setStorageItem(key, value) {
 export function removeStorageItem(key) {
   try {
     localStorage.removeItem(key);
+    window.dispatchEvent(new StorageEvent('storage', { key }));
   } catch (error) {
     console.error(`Error removing ${key} from localStorage`, error);
   }
 }
+

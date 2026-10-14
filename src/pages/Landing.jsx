@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Ship, Navigation, Package, Globe, Clock, ArrowRight, CheckCircle, MapPin, X } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Ship, Navigation, Package, Globe, ArrowRight, CheckCircle, X, MapPin, Send } from 'lucide-react';
 import Logo from '../components/Logo';
 import '../styles/Landing.css';
-import { getShipmentByNumber, generateFullTimeline } from '../lib/shipment-service';
+import { getShipments, generateFullTimeline } from '../lib/shipment-service';
 
 export default function Landing() {
   const [trackingId, setTrackingId] = useState('');
   const [scrolled, setScrolled] = useState(false);
   const [trackedShipment, setTrackedShipment] = useState(null);
   const [trackingError, setTrackingError] = useState('');
-  const navigate = useNavigate();
+  const [contactSubmitted, setContactSubmitted] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -20,18 +20,42 @@ export default function Landing() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Keyboard shortcut (Escape to close tracking modal)
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && trackedShipment) {
+        setTrackedShipment(null);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [trackedShipment]);
+
   const handleTrack = (e) => {
     e.preventDefault();
     setTrackingError('');
-    if (trackingId) {
-      const shipment = getShipmentByNumber(trackingId);
-      if (shipment) {
-        setTrackedShipment(shipment);
-      } else {
-        setTrackingError('Shipment not found. Check your shipment ID and try again.');
-        setTrackedShipment(null);
-      }
+    const query = trackingId.trim().toUpperCase();
+    if (!query) {
+      setTrackingError('Please enter a shipment ID (e.g., SEA-2026-00021).');
+      return;
     }
+    const all = getShipments();
+    const found = all.find(s => 
+      (s.shipmentNumber && s.shipmentNumber.toUpperCase() === query) ||
+      (s.id && s.id.toUpperCase() === query)
+    );
+    if (found) {
+      setTrackedShipment(found);
+    } else {
+      setTrackingError(`Shipment "${query}" was not found. Please check your reference ID and try again.`);
+      setTrackedShipment(null);
+    }
+  };
+
+  const handleContactSubmit = (e) => {
+    e.preventDefault();
+    setContactSubmitted(true);
+    setTimeout(() => setContactSubmitted(false), 4000);
   };
 
   return (
@@ -112,6 +136,36 @@ export default function Landing() {
             />
             <button type="submit" className="btn btn-primary">Track Shipment</button>
           </form>
+          <div style={{ marginTop: '0.75rem', fontSize: '0.85rem', color: 'var(--color-text-muted)', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+            <span>Quick test:</span>
+            {['SEA-2026-00021', 'SEA-2026-00022', 'SEA-2026-00128'].map(id => (
+              <button
+                key={id}
+                type="button"
+                onClick={() => {
+                  setTrackingId(id);
+                  const all = getShipments();
+                  const found = all.find(s => s.shipmentNumber === id);
+                  if (found) {
+                    setTrackedShipment(found);
+                    setTrackingError('');
+                  }
+                }}
+                style={{
+                  background: 'var(--color-surface)',
+                  border: '1px solid var(--color-border)',
+                  borderRadius: 'var(--radius-sm)',
+                  padding: '0.2rem 0.5rem',
+                  fontSize: '0.75rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  color: 'var(--color-secondary)'
+                }}
+              >
+                {id}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -231,9 +285,121 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* Contact Section */}
+      <section id="contact" className="section" style={{ backgroundColor: 'var(--color-background)', borderTop: '1px solid var(--color-border)' }}>
+        <div className="container">
+          <div className="text-center" style={{ marginBottom: '3rem' }}>
+            <h2 className="section-title">Contact Operations & Support</h2>
+            <p style={{ color: 'var(--color-text-muted)', maxWidth: '600px', margin: '0.5rem auto 0 auto' }}>
+              Connect with our maritime dispatch coordinators for cargo quotes, port clearance questions, or vessel charters.
+            </p>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2.5rem', alignItems: 'start' }}>
+            
+            {/* Contact Details & Global Offices */}
+            <div>
+              <h3 style={{ fontSize: '1.25rem', marginBottom: '1.5rem', fontWeight: 700 }}>Global Operations Hubs</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '2rem' }}>
+                <div style={{ display: 'flex', gap: '1rem', padding: '1rem', backgroundColor: 'var(--color-surface)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)' }}>
+                  <MapPin size={22} color="var(--color-secondary)" style={{ flexShrink: 0, marginTop: '2px' }} />
+                  <div>
+                    <div style={{ fontWeight: 700 }}>Alexandria Terminal Hub</div>
+                    <div style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)' }}>Port of Alexandria, Gate 4, Alexandria, Egypt</div>
+                    <div style={{ fontSize: '0.85rem', color: 'var(--color-secondary)', marginTop: '0.25rem' }}>+20 3 487 0100 · operations@navora.demo</div>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '1rem', padding: '1rem', backgroundColor: 'var(--color-surface)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)' }}>
+                  <MapPin size={22} color="var(--color-secondary)" style={{ flexShrink: 0, marginTop: '2px' }} />
+                  <div>
+                    <div style={{ fontWeight: 700 }}>Genoa Maritime Gateway</div>
+                    <div style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)' }}>Ponte San Giorgio, 16126 Genoa, Italy</div>
+                    <div style={{ fontSize: '0.85rem', color: 'var(--color-secondary)', marginTop: '0.25rem' }}>+39 010 555 4200 · genoa@navora.demo</div>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '1rem', padding: '1rem', backgroundColor: 'var(--color-surface)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)' }}>
+                  <MapPin size={22} color="var(--color-secondary)" style={{ flexShrink: 0, marginTop: '2px' }} />
+                  <div>
+                    <div style={{ fontWeight: 700 }}>Rotterdam Central Depot</div>
+                    <div style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)' }}>Maasvlakte 2, Rotterdam Port, Netherlands</div>
+                    <div style={{ fontSize: '0.85rem', color: 'var(--color-secondary)', marginTop: '0.25rem' }}>+31 10 252 0900 · rotterdam@navora.demo</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Contact Form */}
+            <div className="card shadow-md">
+              <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem', fontWeight: 700 }}>Send Us an Inquiry</h3>
+              <p style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem', marginBottom: '1.5rem' }}>Our cargo dispatch response team replies in under 2 hours.</p>
+
+              {contactSubmitted ? (
+                <div style={{ padding: '2rem 1rem', textAlign: 'center', backgroundColor: 'var(--color-success-bg)', borderRadius: 'var(--radius-md)', color: 'var(--color-success)' }}>
+                  <CheckCircle size={36} style={{ margin: '0 auto 0.75rem auto' }} />
+                  <div style={{ fontWeight: 700, fontSize: '1.1rem' }}>Inquiry Sent Successfully!</div>
+                  <div style={{ fontSize: '0.85rem', marginTop: '0.25rem' }}>A logistics specialist will review your request and contact you.</div>
+                </div>
+              ) : (
+                <form onSubmit={handleContactSubmit}>
+                  <div className="input-group">
+                    <label className="input-label">Your Name</label>
+                    <input type="text" className="input-field" placeholder="Capt. Sarah Jenkins" required />
+                  </div>
+                  <div className="input-group">
+                    <label className="input-label">Work Email</label>
+                    <input type="email" className="input-field" placeholder="sarah@logistics.com" required />
+                  </div>
+                  <div className="input-group">
+                    <label className="input-label">Shipping Route or Inquiry</label>
+                    <textarea className="input-field" rows={3} placeholder="Tell us about your cargo volume, origin, destination..." required></textarea>
+                  </div>
+                  <button type="submit" className="btn btn-primary w-full" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
+                    <Send size={16} /> Send Inquiry
+                  </button>
+                </form>
+              )}
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer style={{ backgroundColor: 'var(--color-primary-900)', color: 'rgba(255,255,255,0.7)', padding: '3rem 0 2rem 0', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+        <div className="container">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '2rem', marginBottom: '2rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <Logo variant="compact" size={36} />
+              <div>
+                <div style={{ fontWeight: 800, fontSize: '1.25rem', color: 'white' }}>NAVORA</div>
+                <div style={{ fontSize: '0.75rem' }}>Moving Cargo. Connecting Worlds.</div>
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap', fontSize: '0.9rem' }}>
+              <a href="#home" style={{ color: 'rgba(255,255,255,0.8)' }}>Home</a>
+              <a href="#how-it-works" style={{ color: 'rgba(255,255,255,0.8)' }}>How It Works</a>
+              <a href="#services" style={{ color: 'rgba(255,255,255,0.8)' }}>Services</a>
+              <a href="#track" style={{ color: 'rgba(255,255,255,0.8)' }}>Track Shipment</a>
+              <a href="#contact" style={{ color: 'rgba(255,255,255,0.8)' }}>Contact</a>
+              <Link to="/auth" style={{ color: 'var(--color-secondary)' }}>Portal Login</Link>
+            </div>
+          </div>
+          <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', fontSize: '0.8rem' }}>
+            <div>&copy; {new Date().getFullYear()} Navora Shipping Enterprise Logistics. All rights reserved.</div>
+            <div style={{ display: 'flex', gap: '1.5rem' }}>
+              <span>Privacy Policy</span>
+              <span>Terms of Service</span>
+              <span>Marine Cargo Compliance</span>
+            </div>
+          </div>
+        </div>
+      </footer>
+
       {/* Tracking Modal */}
       {trackedShipment && (
-        <div className="modal-overlay" style={{ zIndex: 1000 }}>
+        <div className="modal-overlay" style={{ zIndex: 1000 }} onClick={(e) => { if (e.target === e.currentTarget) setTrackedShipment(null); }}>
           <div className="modal-content" style={{ maxWidth: '600px' }}>
             <div className="modal-header">
               <h3>Tracking Details</h3>
